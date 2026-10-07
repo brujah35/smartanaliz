@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smart Analiz</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Smart Analiz">
+<meta name="theme-color" content="#0B1120">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230B1120'/%3E%3Crect x='30' y='100' width='26' height='50' rx='6' fill='%2314D3A8'/%3E%3Crect x='77' y='70' width='26' height='80' rx='6' fill='%2314D3A8'/%3E%3Crect x='124' y='35' width='26' height='115' rx='6' fill='%23F5C542'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0B1120; --card:#111A2E; --border:#1E2A44; --text:#E6EDF7; --sub:#8A97B1;
+  --teal:#14D3A8; --tealDim:#0E3B36; --gold:#F5C542; --red:#F26B6B; --redBg:#2A1620;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:60px}
+header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);max-width:760px;margin:0 auto}
+.logo{width:48px;height:48px;border-radius:14px;background:var(--tealDim);display:grid;place-items:center;flex:none}
+h1{margin:0;font-size:24px;font-weight:800}
+.subtitle{color:var(--sub);font-size:13px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chip{border:1px solid var(--border);border-radius:20px;padding:8px 14px;background:var(--card);color:var(--sub);font-weight:700;white-space:nowrap}
+.chip.on{border-color:var(--teal);background:var(--tealDim);color:var(--teal)}
+.chip.off{opacity:.4}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.hint{color:var(--sub);font-size:12px}
+.dbTitle{font-weight:700}
+.dateRow{display:flex;justify-content:space-between;align-items:center;padding:0 8px}
+.dateRow .arr{font-size:30px;color:var(--sub);padding:0 10px}
+.dateText{font-size:16px;font-weight:600}
+.matchRow{display:flex;align-items:center;gap:8px}
+.big{font-size:38px;font-weight:300;padding:0 6px}
+.big:disabled{color:var(--border)}
+.matchMid{flex:1;text-align:center;min-width:0}
+.matchName{font-size:19px;font-weight:700}
+.meta{color:var(--sub);font-size:12px;margin-top:3px}
+.section{color:var(--sub);font-size:16px;font-weight:700;margin-top:6px}
+.groupHead{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left}
+.groupTitle{font-weight:700}
+.oddWrap{display:flex;flex-wrap:wrap;gap:8px}
+.odd{border:1px solid var(--border);border-radius:12px;padding:8px 12px;min-width:88px;text-align:center}
+.odd.on{border-color:var(--teal);background:var(--tealDim)}
+.odd .l{color:var(--sub);font-size:12px;font-weight:600}
+.odd.on .l{color:var(--teal)}
+.odd .v{color:var(--gold);font-size:16px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.sel{align-self:flex-start;border:1px solid #14D3A855;background:var(--tealDim);border-radius:24px;padding:8px 14px;color:var(--teal);font-weight:600}
+.sel b{color:var(--gold)}
+.btn{background:var(--teal);border-radius:18px;padding:18px;text-align:center;color:#fff;font-size:20px;font-weight:800;width:100%}
+.btn:disabled{opacity:.5}
+.err{background:var(--redBg);border:1px solid #F26B6B55;border-radius:16px;padding:14px;color:var(--red)}
+.resTitle{font-size:18px;font-weight:800}
+.boxRow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.box{background:var(--bg);border-radius:12px;padding:10px;text-align:center}
+.box .v{color:var(--gold);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.box .l{color:var(--sub);font-size:11px;margin-top:2px}
+.scoreRow{display:flex;align-items:center;gap:10px}
+.scoreName{width:40px;font-weight:700}
+.barBg{flex:1;height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
+.bar{height:10px;background:var(--teal);border-radius:5px}
+.scoreCnt{color:var(--sub);font-size:12px;width:76px;text-align:right;font-variant-numeric:tabular-nums}
+.hist{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.hist:last-child{border-bottom:0}
+.hist .n{flex:1;min-width:0}
+.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gold{color:var(--gold);font-weight:800}
+.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:s 1s linear infinite;margin:16px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+/* secici */
+[hidden]{display:none!important}
+#picker{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.pHead{display:flex;gap:12px;align-items:center;padding:16px;max-width:760px;width:100%;margin:0 auto}
+#q{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:16px}
+#plist{overflow-y:auto;flex:1;max-width:760px;width:100%;margin:0 auto;padding-bottom:env(safe-area-inset-bottom)}
+.item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);width:100%;text-align:left}
+.item .t{color:var(--teal);font-weight:700;width:46px;flex:none}
+.item .n{flex:1;min-width:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="14" width="5" height="10" rx="1.5" fill="#14D3A8"/><rect x="10.5" y="9" width="5" height="15" rx="1.5" fill="#14D3A8"/><rect x="19" y="3" width="5" height="21" rx="1.5" fill="#F5C542"/></svg></div>
+  <div><h1>Smart Analiz</h1><div class="subtitle">Birebir oran eşleştirici · son 4 yıl</div></div>
+</header>
+<main class="wrap" id="app"></main>
+<div id="picker" hidden>
+  <div class="pHead">
+    <input id="q" placeholder="Takım veya lig ara" autocomplete="off">
+    <button class="big" id="pclose" aria-label="Kapat">✕</button>
+  </div>
+  <div id="plist"></div>
+</div>
+
+<script>
+// ===== AYARLAR =====
+const FN_URL = "https://ccgzaczrmyiiymphqibz.supabase.co/functions/v1/app";
+const APP_TOKEN = "SmartAnaliz2026x7k9q2";
+
+const BOOKMAKERS = [
+  { slug: "bet365", name: "Bet365" },
+  { slug: "pinnacle", name: "Pinnacle" },
+  { slug: "paddy-power", name: "Paddy Power" },
+  { slug: "betmgm-uk", name: "BetMGM UK" },
+  { slug: "betfair-exchange", name: "Betfair Exchange" },
+];
+
+async function call(action, body = {}) {
+  const r = await fetch(FN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-app-token": APP_TOKEN },
+    body: JSON.stringify({ action, ...body }),
+  });
+  let data = null;
+  try { data = await r.json(); } catch {}
+  if (!r.ok) throw new Error((data && (data.error || data.msg)) || "Sunucu hatası " + r.status);
+  if (data && data.error) throw new Error(data.error);
+  return data;
+}
+
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const trDate = d => d.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", weekday: "short" });
+const hhmm = iso => new Date(iso).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+const pct = (a, t) => t ? Math.round(a / t * 100) : 0;
+const fmt = v => (v / 100).toFixed(2);
+const nf = n => Number(n || 0).toLocaleString("tr-TR");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+const S = {
+  bm: "bet365", day: new Date(), matches: [], idx: 0, listLoading: false,
+  books: null, cols: [], oddsLoading: false, filters: [],
+  open: { "Maç Sonucu": true, "Alt/Üst": true, "Karşılıklı Gol": true },
+  result: null, analyzing: false, error: "", status: null,
+};
+let seq = 0;
+const cur = () => S.matches[S.idx];
+const rowOf = () => (S.books && S.books[S.bm]) || null;
+
+// ===== VERI =====
+async function refreshStatus() {
+  try { S.status = await call("status", { competition_id: cur()?.competition_id }); render(); } catch {}
+}
+async function loadDay() {
+  const my = ++seq;
+  Object.assign(S, { listLoading: true, error: "", matches: [], idx: 0, books: null, result: null });
+  render();
+  try {
+    const r = await call("fixtures", { date: ymd(S.day) });
+    if (my !== seq) return;
+    S.matches = r.matches || [];
+    if (!S.matches.length) S.error = "Bu tarihte oranı olan maç bulunamadı.";
+  } catch (e) { if (my === seq) S.error = e.message; }
+  if (my !== seq) return;
+  S.listLoading = false; render();
+  if (S.matches.length) loadMatch();
+}
+async function loadMatch() {
+  const m = cur(); if (!m) return;
+  const my = ++seq;
+  Object.assign(S, { books: null, result: null, error: "", filters: [], oddsLoading: true });
+  render();
+  if (m.competition_id) call("prioritize", { competition_id: m.competition_id }).then(s => { if (my === seq) { S.status = s; render(); } }).catch(() => {});
+  try {
+    const r = await call("odds", { match_id: m.id });
+    if (my !== seq) return;
+    S.books = r.books || {}; S.cols = r.cols || [];
+    if (!Object.keys(S.books).length) S.error = "Bu maç için oran bulunamadı.";
+  } catch (e) { if (my === seq) S.error = e.message; }
+  if (my !== seq) return;
+  S.oddsLoading = false; render();
+}
+async function analyze() {
+  const row = rowOf(); if (!row || !S.filters.length) return;
+  Object.assign(S, { analyzing: true, error: "", result: null }); render();
+  try {
+    const r = await call("analyze", { bm: S.bm, filters: S.filters.map(col => ({ col, v: row[col] })), exclude_id: cur()?.id });
+    S.result = r.result;
+  } catch (e) { S.error = e.message; }
+  S.analyzing = false; render();
+  if (S.result) document.getElementById("res")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ===== CIZIM =====
+function render() {
+  const row = rowOf(), m = cur(), st = S.status;
+  let h = "";
+
+  h += `<div class="chips">` + BOOKMAKERS.map(b => {
+    const has = !S.books || !!S.books[b.slug];
+    return `<button class="chip ${b.slug === S.bm ? "on" : ""} ${has ? "" : "off"}" data-bm="${b.slug}">${b.name}</button>`;
+  }).join("") + `</div>`;
+
+  h += `<div class="card"><div class="dbTitle">Veritabanı: ${nf(st?.total)} maç</div>`;
+  if (st?.comp) h += `<div class="hint" style="color:var(${st.comp.done ? "--teal" : "--gold"})">Bu lig: ${nf(st.comp.count)} maç · ${st.comp.done ? "4 yıl tamam ✓" : "öncelikli toplanıyor…"}</div>`;
+  h += `<div class="hint">${st?.oldest ? "Tüm ligler " + esc(st.oldest) + " tarihine kadar dolu" : "Tüm ligler toplanıyor"}${st?.last?.msg ? " · " + esc(st.last.msg) : ""}</div></div>`;
+
+  h += `<div class="dateRow"><button class="arr" data-shift="-1" aria-label="Önceki gün">‹</button><button class="dateText" data-today>${trDate(S.day)}</button><button class="arr" data-shift="1" aria-label="Sonraki gün">›</button></div>`;
+
+  h += `<div class="card">`;
+  if (S.listLoading) h += `<div class="spin"></div>`;
+  else if (m) h += `<div class="matchRow">
+      <button class="big" data-mv="-1" ${S.idx === 0 ? "disabled" : ""} aria-label="Önceki maç">‹</button>
+      <button class="matchMid" data-pick>
+        <div class="matchName">${esc(m.home)} – ${esc(m.away)}</div>
+        <div class="meta ell">${hhmm(m.utc_date)} · ${esc(m.competition || "Lig")}${m.score ? " · " + esc(m.score) : ""}</div>
+        <div class="meta">${S.idx + 1} / ${S.matches.length} · listeden seç ⌄</div>
+      </button>
+      <button class="big" data-mv="1" ${S.idx >= S.matches.length - 1 ? "disabled" : ""} aria-label="Sonraki maç">›</button></div>`;
+  else h += `<div class="meta" style="text-align:center;padding:20px 0">Maç yok</div>`;
+  h += `</div>`;
+
+  h += `<div class="section">Oranlar · dokunarak filtreye ekle</div>`;
+  if (S.oddsLoading) h += `<div class="spin"></div>`;
+  else if (!row) h += `<div class="card"><div class="hint">${S.books ? "Bu site bu maç için oran vermiyor, başka site seç." : "Oran bekleniyor"}</div></div>`;
+  else {
+    const groups = [...new Set(S.cols.map(c => c.g))];
+    for (const g of groups) {
+      const items = S.cols.map((c, i) => ({ c, i })).filter(x => x.c.g === g && row[x.i] > 0);
+      if (!items.length) continue;
+      const open = !!S.open[g];
+      const n = items.filter(x => S.filters.includes(x.i)).length;
+      h += `<div class="card"><button class="groupHead" data-group="${esc(g)}"><span class="groupTitle">${esc(g)}${n ? "  (" + n + ")" : ""}</span><span class="hint">${open ? "⌃" : "⌄"}</span></button>`;
+      if (open) h += `<div class="oddWrap">` + items.map(({ c, i }) =>
+        `<button class="odd ${S.filters.includes(i) ? "on" : ""}" data-f="${i}"><div class="l">${esc(c.l)}</div><div class="v">${fmt(row[i])}</div></button>`).join("") + `</div>`;
+      h += `</div>`;
+    }
+  }
+
+  if (row && S.filters.length) {
+    h += `<div class="card"><div class="groupTitle">Seçilen Oranlar (${S.filters.length})</div>` +
+      S.filters.map(i => `<button class="sel" data-f="${i}">${esc(S.cols[i]?.l)} <b>${fmt(row[i])}</b>  ✕</button>`).join("") +
+      `<div class="hint">Geçmişte bu oranların HEPSİ birebir aynı olan maçlar aranır.</div></div>`;
+  }
+
+  h += `<button class="btn" data-analyze ${!row || !S.filters.length || S.analyzing ? "disabled" : ""}>${S.analyzing ? "Aranıyor…" : "Analiz Et"}</button>`;
+  if (S.error) h += `<div class="err">⚠️ ${esc(S.error)}</div>`;
+  if (S.result) h += results(S.result, st);
+
+  document.getElementById("app").innerHTML = h;
+}
+
+function box(label, v, n) { return `<div class="box"><div class="v">%${v}</div><div class="l">${label} · ${n}</div></div>`; }
+function results(r, st) {
+  if (!r || !r.total) return `<div class="card" id="res"><div class="resTitle">Birebir eşleşen maç yok</div><div class="hint">Daha az oran seç. ${st?.comp && !st.comp.done ? "Bu ligin geçmişi hâlâ toplanıyor, birkaç dakika sonra tekrar dene." : ""}</div></div>`;
+  const max = r.scores[0]?.cnt || 1;
+  let h = `<div class="card" id="res"><div class="resTitle">${nf(r.total)} birebir eşleşen maç</div>
+    <div class="boxRow">${box("MS 1", pct(r.home, r.total), r.home)}${box("MS X", pct(r.draw, r.total), r.draw)}${box("MS 2", pct(r.away, r.total), r.away)}</div>
+    <div class="boxRow">${box("1.5 Üst", pct(r.over15, r.total), r.over15)}${box("2.5 Üst", pct(r.over25, r.total), r.over25)}${box("3.5 Üst", pct(r.over35, r.total), r.over35)}</div>
+    <div class="boxRow">${box("KG Var", pct(r.btts, r.total), r.btts)}${box("KG Yok", pct(r.total - r.btts, r.total), r.total - r.btts)}<div class="box"><div class="v">${r.avg ?? "-"}</div><div class="l">Ort. Gol</div></div></div></div>`;
+  h += `<div class="section">Skor Dağılımı</div><div class="card">` + r.scores.map(x =>
+    `<div class="scoreRow"><span class="scoreName">${esc(x.score)}</span><div class="barBg"><div class="bar" style="width:${x.cnt / max * 100}%"></div></div><span class="scoreCnt">${x.cnt} · %${pct(x.cnt, r.total)}</span></div>`).join("") + `</div>`;
+  h += `<div class="section">Eşleşen Maçlar</div><div class="card">` + r.recent.map(x =>
+    `<div class="hist"><div class="n"><div class="ell" style="font-weight:600">${esc(x.home)} – ${esc(x.away)}</div><div class="meta ell">${new Date(x.ts).toLocaleDateString("tr-TR")} · ${esc(x.comp)}</div></div><span class="gold">${x.hg}-${x.ag}</span></div>`).join("") + `</div>`;
+  return h;
+}
+
+// ===== SECICI =====
+const picker = document.getElementById("picker"), q = document.getElementById("q"), plist = document.getElementById("plist");
+function drawList() {
+  const s = q.value.trim().toLocaleLowerCase("tr");
+  const list = S.matches.map((m, i) => ({ m, i })).filter(({ m }) => !s || `${m.home} ${m.away} ${m.competition}`.toLocaleLowerCase("tr").includes(s));
+  plist.innerHTML = list.map(({ m, i }) =>
+    `<button class="item" data-i="${i}"><span class="t">${hhmm(m.utc_date)}</span><span class="n"><div style="font-weight:600">${esc(m.home)} – ${esc(m.away)}</div><div class="meta ell">${esc(m.competition)}</div></span>${m.score ? `<span class="gold">${esc(m.score)}</span>` : ""}</button>`).join("")
+    || `<div class="meta" style="padding:20px;text-align:center">Sonuç yok</div>`;
+}
+q.addEventListener("input", drawList);
+document.getElementById("pclose").onclick = () => { picker.hidden = true; q.value = ""; };
+plist.addEventListener("click", e => {
+  const b = e.target.closest("[data-i]"); if (!b) return;
+  S.idx = +b.dataset.i; picker.hidden = true; q.value = ""; loadMatch(); refreshStatus();
+});
+
+// ===== TIKLAMALAR =====
+document.getElementById("app").addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t || t.disabled) return;
+  const d = t.dataset;
+  if (d.bm) { S.bm = d.bm; S.filters = []; S.result = null; render(); }
+  else if (d.shift) { const x = new Date(S.day); x.setDate(x.getDate() + +d.shift); S.day = x; loadDay(); }
+  else if ("today" in d) { S.day = new Date(); loadDay(); }
+  else if (d.mv) { S.idx += +d.mv; loadMatch(); refreshStatus(); }
+  else if ("pick" in d) { picker.hidden = false; drawList(); }
+  else if (d.group) { S.open[d.group] = !S.open[d.group]; render(); }
+  else if (d.f !== undefined) { const i = +d.f; S.result = null; S.filters = S.filters.includes(i) ? S.filters.filter(x => x !== i) : [...S.filters, i]; render(); }
+  else if ("analyze" in d) analyze();
+});
+
+render();
+loadDay();
+refreshStatus();
+setInterval(refreshStatus, 30000);
+</script>
+</body>
+</html>
