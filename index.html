@@ -70,7 +70,8 @@ h1{margin:0;font-size:24px;font-weight:800}
 .hist:last-child{border-bottom:0}
 .hist .n{flex:1;min-width:0}
 .ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gold{color:var(--gold);font-weight:800}
+.gold{color:var(--gold);font-weight:800;text-align:right}
+.htS{display:block;color:var(--sub);font-size:11px;font-weight:600}
 .spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:s 1s linear infinite;margin:16px auto}
 @keyframes s{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
@@ -247,6 +248,22 @@ function render() {
 }
 
 function box(label, v, n) { return `<div class="box"><div class="v">%${v}</div><div class="l">${label} · ${n}</div></div>`; }
+function htBlock(t) {
+  if (!t) return "";
+  if (!t.total) return `<div class="section">İlk Yarı</div><div class="card"><div class="hint">Bu maçların ilk yarı skorları henüz toplanıyor. Biraz sonra tekrar dene.</div></div>`;
+  const n = t.total, f = t.htft || {};
+  const cell = k => `<div class="box"><div class="v">%${pct(f[k] || 0, n)}</div><div class="l">${k} · ${f[k] || 0}</div></div>`;
+  return `<div class="section">İlk Yarı</div><div class="card">
+    <div class="hint">İlk yarı skoru bilinen ${nf(n)} maç</div>
+    <div class="boxRow">${box("İY 1", pct(t.home, n), t.home)}${box("İY X", pct(t.draw, n), t.draw)}${box("İY 2", pct(t.away, n), t.away)}</div>
+    <div class="boxRow">${box("İY 0.5 Üst", pct(t.over05, n), t.over05)}${box("İY 1.5 Üst", pct(t.over15, n), t.over15)}<div class="box"><div class="v">${t.avg ?? "-"}</div><div class="l">İY Ort. Gol</div></div></div>
+    <div class="groupTitle" style="margin-top:4px">İY / MS</div>
+    <div class="boxRow">${["1/1","1/X","1/2"].map(cell).join("")}</div>
+    <div class="boxRow">${["X/1","X/X","X/2"].map(cell).join("")}</div>
+    <div class="boxRow">${["2/1","2/X","2/2"].map(cell).join("")}</div>
+    ${t.scores?.length ? `<div class="hint">En sık İY skorları: ${t.scores.map(x => `${esc(x.score)} (${x.cnt})`).join(" · ")}</div>` : ""}
+  </div>`;
+}
 function results(r, st) {
   if (!r || !r.total) return `<div class="card" id="res"><div class="resTitle">Birebir eşleşen maç yok</div><div class="hint">Daha az oran seç. ${st?.comp && !st.comp.done ? "Bu ligin geçmişi hâlâ toplanıyor, birkaç dakika sonra tekrar dene." : ""}</div></div>`;
   const max = r.scores[0]?.cnt || 1;
@@ -254,10 +271,11 @@ function results(r, st) {
     <div class="boxRow">${box("MS 1", pct(r.home, r.total), r.home)}${box("MS X", pct(r.draw, r.total), r.draw)}${box("MS 2", pct(r.away, r.total), r.away)}</div>
     <div class="boxRow">${box("1.5 Üst", pct(r.over15, r.total), r.over15)}${box("2.5 Üst", pct(r.over25, r.total), r.over25)}${box("3.5 Üst", pct(r.over35, r.total), r.over35)}</div>
     <div class="boxRow">${box("KG Var", pct(r.btts, r.total), r.btts)}${box("KG Yok", pct(r.total - r.btts, r.total), r.total - r.btts)}<div class="box"><div class="v">${r.avg ?? "-"}</div><div class="l">Ort. Gol</div></div></div></div>`;
+  h += htBlock(r.ht);
   h += `<div class="section">Skor Dağılımı</div><div class="card">` + r.scores.map(x =>
     `<div class="scoreRow"><span class="scoreName">${esc(x.score)}</span><div class="barBg"><div class="bar" style="width:${x.cnt / max * 100}%"></div></div><span class="scoreCnt">${x.cnt} · %${pct(x.cnt, r.total)}</span></div>`).join("") + `</div>`;
   h += `<div class="section">Eşleşen Maçlar</div><div class="card">` + r.recent.map(x =>
-    `<div class="hist"><div class="n"><div class="ell" style="font-weight:600">${esc(x.home)} – ${esc(x.away)}</div><div class="meta ell">${new Date(x.ts).toLocaleDateString("tr-TR")} · ${esc(x.comp)}</div></div><span class="gold">${x.hg}-${x.ag}</span></div>`).join("") + `</div>`;
+    `<div class="hist"><div class="n"><div class="ell" style="font-weight:600">${esc(x.home)} – ${esc(x.away)}</div><div class="meta ell">${new Date(x.ts).toLocaleDateString("tr-TR")} · ${esc(x.comp)}</div></div><span class="gold">${x.hg}-${x.ag}${x.hth >= 0 ? `<span class="htS">İY ${x.hth}-${x.hta}</span>` : ""}</span></div>`).join("") + `</div>`;
   return h;
 }
 
