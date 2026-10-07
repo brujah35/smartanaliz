@@ -11,28 +11,36 @@
 <meta name="theme-color" content="#0B1120">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230B1120'/%3E%3Crect x='30' y='100' width='26' height='50' rx='6' fill='%2314D3A8'/%3E%3Crect x='77' y='70' width='26' height='80' rx='6' fill='%2314D3A8'/%3E%3Crect x='124' y='35' width='26' height='115' rx='6' fill='%23F5C542'/%3E%3C/svg%3E">
 <style>
+/* Koyu, sayisal bir panel: teal = veri, altin = oran, kirmizi = canli */
 :root{
-  --bg:#0B1120; --card:#111A2E; --border:#1E2A44; --text:#E6EDF7; --sub:#8A97B1;
-  --teal:#14D3A8; --tealDim:#0E3B36; --gold:#F5C542; --red:#F26B6B; --redBg:#2A1620;
+  --bg:#0B1120; --card:#111A2E; --card2:#0E1628; --border:#1E2A44; --text:#E6EDF7; --sub:#8A97B1;
+  --teal:#14D3A8; --tealDim:#0E3B36; --gold:#F5C542; --red:#F26B6B; --redBg:#2A1620; --gray:#5B6785;
   color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
 body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+[hidden]{display:none!important}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
 button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
-.wrap{max-width:760px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:60px}
-header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);max-width:760px;margin:0 auto}
-.logo{width:48px;height:48px;border-radius:14px;background:var(--tealDim);display:grid;place-items:center;flex:none}
-h1{margin:0;font-size:24px;font-weight:800}
+.wrap{max-width:820px;margin:0 auto;padding:16px;padding-bottom:70px;display:flex;flex-direction:column;gap:12px}
+header{max-width:820px;margin:0 auto;padding:14px 16px 0;display:flex;flex-direction:column;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:13px;background:var(--tealDim);display:grid;place-items:center;flex:none}
+h1{margin:0;font-size:22px;font-weight:800}
 .subtitle{color:var(--sub);font-size:13px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:4px}
+.tab{padding:10px 6px;border-radius:10px;font-weight:700;color:var(--sub);display:flex;gap:6px;align-items:center;justify-content:center}
+.tab.on{background:var(--tealDim);color:var(--teal)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .chip{border:1px solid var(--border);border-radius:20px;padding:8px 14px;background:var(--card);color:var(--sub);font-weight:700;white-space:nowrap}
 .chip.on{border-color:var(--teal);background:var(--tealDim);color:var(--teal)}
 .chip.off{opacity:.4}
-.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.wrapChips{display:flex;flex-wrap:wrap;gap:8px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .hint{color:var(--sub);font-size:12px}
-.dbTitle{font-weight:700}
+.b{font-weight:700}
 .dateRow{display:flex;justify-content:space-between;align-items:center;padding:0 8px}
 .dateRow .arr{font-size:30px;color:var(--sub);padding:0 10px}
 .dateText{font-size:16px;font-weight:600}
@@ -44,23 +52,27 @@ h1{margin:0;font-size:24px;font-weight:800}
 .meta{color:var(--sub);font-size:12px;margin-top:3px}
 .section{color:var(--sub);font-size:16px;font-weight:700;margin-top:6px}
 .groupHead{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left}
-.groupTitle{font-weight:700}
 .oddWrap{display:flex;flex-wrap:wrap;gap:8px}
 .odd{border:1px solid var(--border);border-radius:12px;padding:8px 12px;min-width:88px;text-align:center}
 .odd.on{border-color:var(--teal);background:var(--tealDim)}
+.odd.ro{cursor:default}
 .odd .l{color:var(--sub);font-size:12px;font-weight:600}
 .odd.on .l{color:var(--teal)}
 .odd .v{color:var(--gold);font-size:16px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
 .sel{align-self:flex-start;border:1px solid #14D3A855;background:var(--tealDim);border-radius:24px;padding:8px 14px;color:var(--teal);font-weight:600}
 .sel b{color:var(--gold)}
-.btn{background:var(--teal);border-radius:18px;padding:18px;text-align:center;color:#fff;font-size:20px;font-weight:800;width:100%}
-.btn:disabled{opacity:.5}
+.btn{background:var(--teal);border-radius:18px;padding:17px;text-align:center;color:#06231d;font-size:19px;font-weight:800;width:100%}
+.btn:disabled{opacity:.45}
+.btn2{border:1px solid var(--teal);color:var(--teal);border-radius:12px;padding:8px 12px;font-weight:700;font-size:13px;white-space:nowrap}
+.btn2.red{border-color:var(--red);color:var(--red)}
 .err{background:var(--redBg);border:1px solid #F26B6B55;border-radius:16px;padding:14px;color:var(--red)}
 .resTitle{font-size:18px;font-weight:800}
-.boxRow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.box{background:var(--bg);border-radius:12px;padding:10px;text-align:center}
+.boxRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.box{background:var(--bg);border-radius:12px;padding:10px 6px;text-align:center;min-width:0}
 .box .v{color:var(--gold);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
 .box .l{color:var(--sub);font-size:11px;margin-top:2px}
+.box .ci{color:var(--gray);font-size:10.5px;margin-top:1px;font-variant-numeric:tabular-nums}
+.warn{background:#2A2410;border:1px solid #F5C54244;color:var(--gold);border-radius:12px;padding:10px 12px;font-size:13px}
 .scoreRow{display:flex;align-items:center;gap:10px}
 .scoreName{width:40px;font-weight:700}
 .barBg{flex:1;height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
@@ -68,28 +80,85 @@ h1{margin:0;font-size:24px;font-weight:800}
 .scoreCnt{color:var(--sub);font-size:12px;width:76px;text-align:right;font-variant-numeric:tabular-nums}
 .hist{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
 .hist:last-child{border-bottom:0}
-.hist .n{flex:1;min-width:0}
+.grow{flex:1;min-width:0}
 .ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gold{color:var(--gold);font-weight:800;text-align:right}
 .htS{display:block;color:var(--sub);font-size:11px;font-weight:600}
 .spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:s 1s linear infinite;margin:16px auto}
 @keyframes s{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+/* ikiz */
+.twin{display:flex;gap:14px;align-items:center}
+.twinScore{font-size:30px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums;text-align:center;min-width:70px}
+/* loo */
+.loo{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.loo:last-child{border-bottom:0}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.pill{background:var(--bg);border-radius:8px;padding:3px 7px;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+.pill b{color:var(--text)}
+/* kombine */
+.cmb{border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:600;color:var(--sub)}
+.cmb.on{border-color:var(--gold);color:var(--gold);background:#2A2410}
+.cmbRes{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.cmbRes .p{font-size:30px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+/* isi haritasi */
+.hmWrap{overflow-x:auto}
+.hm{display:grid;grid-template-columns:34px repeat(5,minmax(44px,1fr));gap:4px;min-width:280px}
+.hm .h{color:var(--sub);font-size:11px;font-weight:700;display:grid;place-items:center}
+.hm .c{border-radius:8px;padding:8px 2px;text-align:center;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid var(--border)}
+.hm .c small{display:block;font-weight:500;font-size:10px;opacity:.8}
+/* zaman */
+.tl{display:flex;gap:6px;align-items:flex-end;overflow-x:auto;padding-bottom:4px}
+.tlCol{flex:1;min-width:34px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tlBar{width:100%;height:110px;border-radius:6px;overflow:hidden;display:flex;flex-direction:column-reverse;background:var(--bg)}
+.tlBar span{display:block;width:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+/* radar */
+.prog{height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.prog span{display:block;height:8px;background:var(--teal)}
+.rItem{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px solid var(--border)}
+.rItem:last-child{border-bottom:0}
+.sig{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:12px;padding:8px 10px}
+.sig .k{font-weight:800;min-width:62px}
+.sig .d{font-weight:800;font-variant-numeric:tabular-nums;margin-left:auto;text-align:right}
+.tag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px}
+.tag.g{background:var(--tealDim);color:var(--teal)}
+.tag.y{background:#2A2410;color:var(--gold)}
+/* canli */
+.lvItem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);width:100%;text-align:left}
+.lvItem:last-child{border-bottom:0}
+.min{color:var(--red);font-weight:800;width:42px;flex:none;font-variant-numeric:tabular-nums}
+.lvScore{font-size:18px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.lvHead{display:flex;align-items:center;gap:12px}
+.lvBig{font-size:34px;font-weight:800;color:var(--gold);text-align:center;font-variant-numeric:tabular-nums}
+.st{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;align-items:center;font-size:13px}
+.st .n{font-weight:800;font-variant-numeric:tabular-nums}
+.st .n:last-child{text-align:right}
+.stBars{display:flex;flex-direction:column;gap:3px}
+.stLbl{text-align:center;color:var(--sub);font-size:12px}
+.stTrack{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--bg)}
+.lg{font-size:12px;color:var(--sub);font-weight:700;margin-top:4px}
 /* secici */
-[hidden]{display:none!important}
 #picker{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
-.pHead{display:flex;gap:12px;align-items:center;padding:16px;max-width:760px;width:100%;margin:0 auto}
+.pHead{display:flex;gap:12px;align-items:center;padding:16px;max-width:820px;width:100%;margin:0 auto}
 #q{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:16px}
-#plist{overflow-y:auto;flex:1;max-width:760px;width:100%;margin:0 auto;padding-bottom:env(safe-area-inset-bottom)}
+#plist{overflow-y:auto;flex:1;max-width:820px;width:100%;margin:0 auto;padding-bottom:env(safe-area-inset-bottom)}
 .item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);width:100%;text-align:left}
 .item .t{color:var(--teal);font-weight:700;width:46px;flex:none}
-.item .n{flex:1;min-width:0}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="14" width="5" height="10" rx="1.5" fill="#14D3A8"/><rect x="10.5" y="9" width="5" height="15" rx="1.5" fill="#14D3A8"/><rect x="19" y="3" width="5" height="21" rx="1.5" fill="#F5C542"/></svg></div>
-  <div><h1>Smart Analiz</h1><div class="subtitle">Birebir oran eşleştirici · son 4 yıl</div></div>
+  <div class="brand">
+    <div class="logo"><svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="14" width="5" height="10" rx="1.5" fill="#14D3A8"/><rect x="10.5" y="9" width="5" height="15" rx="1.5" fill="#14D3A8"/><rect x="19" y="3" width="5" height="21" rx="1.5" fill="#F5C542"/></svg></div>
+    <div><h1>Smart Analiz</h1><div class="subtitle">Birebir oran eşleştirici · son 2 yıl</div></div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-tab="analiz">Analiz</button>
+    <button class="tab" data-tab="radar">Radar</button>
+    <button class="tab" data-tab="canli"><span class="dot"></span>Canlı</button>
+  </nav>
 </header>
 <main class="wrap" id="app"></main>
 <div id="picker" hidden>
@@ -112,6 +181,9 @@ const BOOKMAKERS = [
   { slug: "betmgm-uk", name: "BetMGM UK" },
   { slug: "betfair-exchange", name: "Betfair Exchange" },
 ];
+const MIN_SAMPLE = 20;      // bundan az eslesmede "az ornek" uyarisi
+const RADAR_MIN = 15;       // radarda dikkate alinacak en az mac
+const RADAR_MAX = 60;       // bir taramada en fazla mac
 
 async function call(action, body = {}) {
   const r = await fetch(FN_URL, {
@@ -125,7 +197,12 @@ async function call(action, body = {}) {
   if (data && data.error) throw new Error(data.error);
   return data;
 }
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
 
+// ===== YARDIMCILAR =====
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const trDate = d => d.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", weekday: "short" });
 const hhmm = iso => new Date(iso).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
@@ -133,24 +210,40 @@ const pct = (a, t) => t ? Math.round(a / t * 100) : 0;
 const fmt = v => (v / 100).toFixed(2);
 const nf = n => Number(n || 0).toLocaleString("tr-TR");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const dayToDate = n => new Date(Date.UTC(2000, 0, 1) + n * 86400000);
+// %95 Wilson guven araligi
+function wilson(k, n) {
+  if (!n) return [0, 0];
+  const z = 1.96, p = k / n, d = 1 + z * z / n;
+  const c = (p + z * z / (2 * n)) / d, h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d;
+  return [Math.max(0, c - h), Math.min(1, c + h)];
+}
+const ciTxt = (k, n) => { const [a, b] = wilson(k, n); return `%${Math.round(a * 100)}–${Math.round(b * 100)}`; };
 
 const S = {
+  tab: "analiz",
   bm: "bet365", day: new Date(), matches: [], idx: 0, listLoading: false,
   books: null, cols: [], oddsLoading: false, filters: [],
-  open: { "Maç Sonucu": true, "Alt/Üst": true, "Karşılıklı Gol": true },
+  open: { "Maç Sonucu": true, "Alt/Üst": true, "Karşılıklı Gol": true, "Açılış Oranı (MS)": true },
   result: null, analyzing: false, error: "", status: null,
+  loo: null, looLoading: false, combo: [], pendingAuto: null,
+  radar: { leagues: store.get("radarLeagues", []), running: false, done: 0, total: 0, items: [], errors: 0, stop: false, msg: "" },
+  live: { list: null, loading: false, error: "", sel: null, detail: null, dLoading: false, bm: null },
 };
 let seq = 0;
 const cur = () => S.matches[S.idx];
 const rowOf = () => (S.books && S.books[S.bm]) || null;
+const colByLabel = l => S.cols.findIndex(c => c.l === l);
 
-// ===== VERI =====
+// ===== VERI: ANALIZ =====
 async function refreshStatus() {
-  try { S.status = await call("status", { competition_id: cur()?.competition_id }); render(); } catch {}
+  try { S.status = await call("status", { competition_id: cur()?.competition_id }); if (S.tab === "analiz") render(); } catch {}
 }
 async function loadDay() {
   const my = ++seq;
-  Object.assign(S, { listLoading: true, error: "", matches: [], idx: 0, books: null, result: null });
+  Object.assign(S, { listLoading: true, error: "", matches: [], idx: 0, books: null, result: null, loo: null });
+  S.radar.items = []; S.radar.done = 0; S.radar.total = 0; S.radar.msg = "";
   render();
   try {
     const r = await call("fixtures", { date: ymd(S.day) });
@@ -165,7 +258,7 @@ async function loadDay() {
 async function loadMatch() {
   const m = cur(); if (!m) return;
   const my = ++seq;
-  Object.assign(S, { books: null, result: null, error: "", filters: [], oddsLoading: true });
+  Object.assign(S, { books: null, result: null, loo: null, error: "", filters: [], oddsLoading: true });
   render();
   if (m.competition_id) call("prioritize", { competition_id: m.competition_id }).then(s => { if (my === seq) { S.status = s; render(); } }).catch(() => {});
   try {
@@ -175,34 +268,65 @@ async function loadMatch() {
     if (!Object.keys(S.books).length) S.error = "Bu maç için oran bulunamadı.";
   } catch (e) { if (my === seq) S.error = e.message; }
   if (my !== seq) return;
-  S.oddsLoading = false; render();
+  S.oddsLoading = false;
+  // Radardan gelindiyse filtreleri otomatik sec ve analiz et
+  if (S.pendingAuto && S.pendingAuto.id === m.id) {
+    const p = S.pendingAuto; S.pendingAuto = null;
+    if (S.books[p.bm]) { S.bm = p.bm; S.filters = p.cols.filter(c => (S.books[p.bm][c] || 0) > 0); render(); if (S.filters.length) return analyze(); }
+  }
+  render();
 }
 async function analyze() {
   const row = rowOf(); if (!row || !S.filters.length) return;
-  Object.assign(S, { analyzing: true, error: "", result: null }); render();
+  const my = seq;
+  Object.assign(S, { analyzing: true, error: "", result: null, loo: null }); render();
+  const filters = S.filters.map(col => ({ col, v: row[col] }));
   try {
-    const r = await call("analyze", { bm: S.bm, filters: S.filters.map(col => ({ col, v: row[col] })), exclude_id: cur()?.id });
+    const r = await call("analyze", { bm: S.bm, filters, exclude_id: cur()?.id });
+    if (my !== seq) return;
     S.result = r.result;
-  } catch (e) { S.error = e.message; }
+  } catch (e) { if (my === seq) S.error = e.message; }
+  if (my !== seq) return;
   S.analyzing = false; render();
   if (S.result) document.getElementById("res")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (S.result && filters.length >= 2) {
+    S.looLoading = true; render();
+    try { const r = await call("loo", { bm: S.bm, filters, exclude_id: cur()?.id }); if (my === seq) S.loo = r.items || []; }
+    catch { if (my === seq) S.loo = []; }
+    if (my === seq) { S.looLoading = false; render(); }
+  }
 }
 
-// ===== CIZIM =====
+// ===== CIZIM: ORTAK =====
 function render() {
-  const row = rowOf(), m = cur(), st = S.status;
-  let h = "";
-
-  h += `<div class="chips">` + BOOKMAKERS.map(b => {
-    const has = !S.books || !!S.books[b.slug];
-    return `<button class="chip ${b.slug === S.bm ? "on" : ""} ${has ? "" : "off"}" data-bm="${b.slug}">${b.name}</button>`;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.tab === S.tab));
+  const h = S.tab === "radar" ? renderRadar() : S.tab === "canli" ? renderLive() : renderAnaliz();
+  document.getElementById("app").innerHTML = h;
+}
+function bmChips(books, cur) {
+  return `<div class="chips">` + BOOKMAKERS.map(b => {
+    const has = !books || !!books[b.slug];
+    return `<button class="chip ${b.slug === cur ? "on" : ""} ${has ? "" : "off"}" data-bm="${b.slug}">${b.name}</button>`;
   }).join("") + `</div>`;
+}
+function dateRow() {
+  return `<div class="dateRow"><button class="arr" data-shift="-1" aria-label="Önceki gün">‹</button><button class="dateText" data-today>${trDate(S.day)}</button><button class="arr" data-shift="1" aria-label="Sonraki gün">›</button></div>`;
+}
+function box(label, k, n, extra = "") {
+  return `<div class="box"><div class="v">%${pct(k, n)}</div><div class="l">${label} · ${k}</div><div class="ci">${ciTxt(k, n)}${extra}</div></div>`;
+}
 
-  h += `<div class="card"><div class="dbTitle">Veritabanı: ${nf(st?.total)} maç</div>`;
-  if (st?.comp) h += `<div class="hint" style="color:var(${st.comp.done ? "--teal" : "--gold"})">Bu lig: ${nf(st.comp.count)} maç · ${st.comp.done ? "4 yıl tamam ✓" : "öncelikli toplanıyor…"}</div>`;
+// ===== ANALIZ EKRANI =====
+function renderAnaliz() {
+  const row = rowOf(), m = cur(), st = S.status;
+  let h = bmChips(S.books, S.bm);
+
+  h += `<div class="card"><div class="b">Veritabanı: ${nf(st?.total)} maç</div>`;
+  if (st?.comp) h += `<div class="hint" style="color:var(${st.comp.done ? "--teal" : "--gold"})">Bu lig: ${nf(st.comp.count)} maç · ${st.comp.done ? "2 yıl tamam ✓" : "öncelikli toplanıyor…"}</div>`;
+  if (st?.refresh > 0) h += `<div class="hint">Eski maçlar açılış oranı ve ilk yarı için güncelleniyor: ${nf(st.refresh)} kaldı</div>`;
   h += `<div class="hint">${st?.oldest ? "Tüm ligler " + esc(st.oldest) + " tarihine kadar dolu" : "Tüm ligler toplanıyor"}${st?.last?.msg ? " · " + esc(st.last.msg) : ""}</div></div>`;
 
-  h += `<div class="dateRow"><button class="arr" data-shift="-1" aria-label="Önceki gün">‹</button><button class="dateText" data-today>${trDate(S.day)}</button><button class="arr" data-shift="1" aria-label="Sonraki gün">›</button></div>`;
+  h += dateRow();
 
   h += `<div class="card">`;
   if (S.listLoading) h += `<div class="spin"></div>`;
@@ -220,62 +344,380 @@ function render() {
   h += `<div class="section">Oranlar · dokunarak filtreye ekle</div>`;
   if (S.oddsLoading) h += `<div class="spin"></div>`;
   else if (!row) h += `<div class="card"><div class="hint">${S.books ? "Bu site bu maç için oran vermiyor, başka site seç." : "Oran bekleniyor"}</div></div>`;
-  else {
-    const groups = [...new Set(S.cols.map(c => c.g))];
-    for (const g of groups) {
-      const items = S.cols.map((c, i) => ({ c, i })).filter(x => x.c.g === g && row[x.i] > 0);
-      if (!items.length) continue;
-      const open = !!S.open[g];
-      const n = items.filter(x => S.filters.includes(x.i)).length;
-      h += `<div class="card"><button class="groupHead" data-group="${esc(g)}"><span class="groupTitle">${esc(g)}${n ? "  (" + n + ")" : ""}</span><span class="hint">${open ? "⌃" : "⌄"}</span></button>`;
-      if (open) h += `<div class="oddWrap">` + items.map(({ c, i }) =>
-        `<button class="odd ${S.filters.includes(i) ? "on" : ""}" data-f="${i}"><div class="l">${esc(c.l)}</div><div class="v">${fmt(row[i])}</div></button>`).join("") + `</div>`;
-      h += `</div>`;
-    }
-  }
+  else h += oddsGroups(row, true);
 
   if (row && S.filters.length) {
-    h += `<div class="card"><div class="groupTitle">Seçilen Oranlar (${S.filters.length})</div>` +
+    const hasOpen = S.filters.some(i => (S.cols[i]?.g || "").startsWith("Açılış"));
+    h += `<div class="card"><div class="b">Seçilen Oranlar (${S.filters.length})</div>` +
       S.filters.map(i => `<button class="sel" data-f="${i}">${esc(S.cols[i]?.l)} <b>${fmt(row[i])}</b>  ✕</button>`).join("") +
-      `<div class="hint">Geçmişte bu oranların HEPSİ birebir aynı olan maçlar aranır.</div></div>`;
+      `<div class="hint">Geçmişte bu oranların HEPSİ birebir aynı olan maçlar aranır.</div>` +
+      (hasOpen && S.status?.refresh > 0 ? `<div class="hint" style="color:var(--gold)">Açılış oranları eski maçlarda güncellendikçe eşleşme sayısı artacak.</div>` : "") + `</div>`;
   }
 
   h += `<button class="btn" data-analyze ${!row || !S.filters.length || S.analyzing ? "disabled" : ""}>${S.analyzing ? "Aranıyor…" : "Analiz Et"}</button>`;
   if (S.error) h += `<div class="err">⚠️ ${esc(S.error)}</div>`;
-  if (S.result) h += results(S.result, st);
-
-  document.getElementById("app").innerHTML = h;
+  if (S.result) h += results(S.result);
+  return h;
 }
 
-function box(label, v, n) { return `<div class="box"><div class="v">%${v}</div><div class="l">${label} · ${n}</div></div>`; }
+function oddsGroups(row, selectable) {
+  let h = "";
+  const groups = [...new Set(S.cols.map(c => c.g))];
+  for (const g of groups) {
+    const items = S.cols.map((c, i) => ({ c, i })).filter(x => x.c.g === g && row[x.i] > 0);
+    if (!items.length) continue;
+    const open = !!S.open[g];
+    const n = selectable ? items.filter(x => S.filters.includes(x.i)).length : 0;
+    h += `<div class="card"><button class="groupHead" data-group="${esc(g)}"><span class="b">${esc(g)}${n ? "  (" + n + ")" : ""}</span><span class="hint">${open ? "⌃" : "⌄"}</span></button>`;
+    if (open) h += `<div class="oddWrap">` + items.map(({ c, i }) => selectable
+      ? `<button class="odd ${S.filters.includes(i) ? "on" : ""}" data-f="${i}"><div class="l">${esc(c.l)}</div><div class="v">${fmt(row[i])}</div></button>`
+      : `<div class="odd ro"><div class="l">${esc(c.l)}</div><div class="v">${fmt(row[i])}</div></div>`).join("") + `</div>`;
+    h += `</div>`;
+  }
+  return h;
+}
+
+function results(r) {
+  if (!r || !r.total) {
+    let h = `<div class="card" id="res"><div class="resTitle">Birebir eşleşen maç yok</div><div class="hint">Daha az oran seç. ${S.status?.comp && !S.status.comp.done ? "Bu ligin geçmişi hâlâ toplanıyor, birkaç dakika sonra tekrar dene." : ""}</div></div>`;
+    return h + looCard(r);
+  }
+  const n = r.total;
+  let h = `<div class="card" id="res"><div class="resTitle">${nf(n)} birebir eşleşen maç</div>`;
+  if (n < MIN_SAMPLE) h += `<div class="warn">Az örnek (${n} maç). Yüzdeler çok oynak olabilir; alttaki aralıklara bak.</div>`;
+  h += `<div class="boxRow">${box("MS 1", r.home, n)}${box("MS X", r.draw, n)}${box("MS 2", r.away, n)}</div>
+    <div class="boxRow">${box("1.5 Üst", r.over15, n)}${box("2.5 Üst", r.over25, n)}${box("3.5 Üst", r.over35, n)}</div>
+    <div class="boxRow">${box("KG Var", r.btts, n)}${box("KG Yok", n - r.btts, n)}<div class="box"><div class="v">${r.avg ?? "-"}</div><div class="l">Ort. Gol</div><div class="ci">maç başı</div></div></div>
+    <div class="hint">Küçük gri sayılar %95 güven aralığı: gerçek oran büyük ihtimalle bu aralıkta.</div></div>`;
+  h += twinCard(r);
+  h += looCard(r);
+  h += htBlock(r.ht);
+  h += comboCard(r);
+  h += heatmapCard(r);
+  h += flowCard(r);
+  h += timelineCard(r);
+  const max = r.scores[0]?.cnt || 1;
+  h += `<div class="section">Skor Dağılımı</div><div class="card">` + r.scores.map(x =>
+    `<div class="scoreRow"><span class="scoreName">${esc(x.score)}</span><div class="barBg"><div class="bar" style="width:${x.cnt / max * 100}%"></div></div><span class="scoreCnt">${x.cnt} · %${pct(x.cnt, n)}</span></div>`).join("") + `</div>`;
+  h += `<div class="section">Eşleşen Maçlar</div><div class="card">` + r.recent.map(x =>
+    `<div class="hist"><div class="grow"><div class="ell b">${esc(x.home)} – ${esc(x.away)}</div><div class="meta ell">${new Date(x.ts).toLocaleDateString("tr-TR")} · ${esc(x.comp)}</div></div><span class="gold">${x.hg}-${x.ag}${x.hth != null && x.hth >= 0 ? `<span class="htS">İY ${x.hth}-${x.hta}</span>` : ""}</span></div>`).join("") + `</div>`;
+  return h;
+}
+
+// Macin ikizi: ayni oranlarla en son oynanan mac
+function twinCard(r) {
+  const t = r.recent?.[0]; if (!t) return "";
+  const days = Math.round((Date.now() - new Date(t.ts)) / 86400000);
+  return `<div class="section">Maçın İkizi</div><div class="card"><div class="twin">
+    <div class="twinScore">${t.hg}-${t.ag}${t.hth != null && t.hth >= 0 ? `<span class="htS">İY ${t.hth}-${t.hta}</span>` : ""}</div>
+    <div class="grow"><div class="b">${esc(t.home)} – ${esc(t.away)}</div>
+    <div class="meta">${new Date(t.ts).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })} · ${days} gün önce</div>
+    <div class="meta ell">${esc(t.comp)}</div></div></div>
+    <div class="hint">Seçtiğin oranlarla birebir aynı oranlarla oynanan en son maç.</div></div>`;
+}
+
+// Hangi oran sonucu degistiriyor?
+function looCard(r) {
+  if (S.filters.length < 2) return "";
+  if (S.looLoading) return `<div class="section">Hangi oran sonucu değiştiriyor?</div><div class="card"><div class="spin"></div></div>`;
+  if (!S.loo || !S.loo.length) return "";
+  const row = rowOf(); if (!row) return "";
+  const empty = !r || !r.total;
+  const items = [...S.loo];
+  if (empty) items.sort((a, b) => b.total - a.total);
+  let h = `<div class="section">${empty ? "Eşleşme yok · bir oranı çıkarırsan" : "Hangi oran sonucu değiştiriyor?"}</div><div class="card">`;
+  if (!empty) h += `<div class="hint">Her satır: o oran çıkarılınca kalan oranlarla bulunan maçlar.</div>`;
+  for (const it of items) {
+    const n = it.total, c = S.cols[it.col];
+    const same = r && n === r.total;
+    h += `<div class="loo"><div class="grow"><div class="b">${esc(c?.l)} <span class="gold">${fmt(row[it.col])}</span> çıkarsa → ${nf(n)} maç${same ? ` <span class="hint">(etkisiz)</span>` : ""}</div>` +
+      (n ? `<div class="pills"><span class="pill">MS1 <b>%${pct(it.home, n)}</b></span><span class="pill">X <b>%${pct(it.draw, n)}</b></span><span class="pill">MS2 <b>%${pct(it.away, n)}</b></span><span class="pill">2.5Ü <b>%${pct(it.over25, n)}</b></span><span class="pill">KG <b>%${pct(it.btts, n)}</b></span></div>` : "") +
+      `</div>${n ? `<button class="btn2" data-dropf="${it.col}">Çıkar</button>` : ""}</div>`;
+  }
+  return h + `</div>`;
+}
+
 function htBlock(t) {
   if (!t) return "";
   if (!t.total) return `<div class="section">İlk Yarı</div><div class="card"><div class="hint">Bu maçların ilk yarı skorları henüz toplanıyor. Biraz sonra tekrar dene.</div></div>`;
   const n = t.total, f = t.htft || {};
-  const cell = k => `<div class="box"><div class="v">%${pct(f[k] || 0, n)}</div><div class="l">${k} · ${f[k] || 0}</div></div>`;
+  const cell = k => box(k, f[k] || 0, n);
   return `<div class="section">İlk Yarı</div><div class="card">
     <div class="hint">İlk yarı skoru bilinen ${nf(n)} maç</div>
-    <div class="boxRow">${box("İY 1", pct(t.home, n), t.home)}${box("İY X", pct(t.draw, n), t.draw)}${box("İY 2", pct(t.away, n), t.away)}</div>
-    <div class="boxRow">${box("İY 0.5 Üst", pct(t.over05, n), t.over05)}${box("İY 1.5 Üst", pct(t.over15, n), t.over15)}<div class="box"><div class="v">${t.avg ?? "-"}</div><div class="l">İY Ort. Gol</div></div></div>
-    <div class="groupTitle" style="margin-top:4px">İY / MS</div>
+    <div class="boxRow">${box("İY 1", t.home, n)}${box("İY X", t.draw, n)}${box("İY 2", t.away, n)}</div>
+    <div class="boxRow">${box("İY 0.5 Üst", t.over05, n)}${box("İY 1.5 Üst", t.over15, n)}<div class="box"><div class="v">${t.avg ?? "-"}</div><div class="l">İY Ort. Gol</div></div></div>
+    <div class="b" style="margin-top:4px">İY / MS</div>
     <div class="boxRow">${["1/1","1/X","1/2"].map(cell).join("")}</div>
     <div class="boxRow">${["X/1","X/X","X/2"].map(cell).join("")}</div>
     <div class="boxRow">${["2/1","2/X","2/2"].map(cell).join("")}</div>
     ${t.scores?.length ? `<div class="hint">En sık İY skorları: ${t.scores.map(x => `${esc(x.score)} (${x.cnt})`).join(" · ")}</div>` : ""}
   </div>`;
 }
-function results(r, st) {
-  if (!r || !r.total) return `<div class="card" id="res"><div class="resTitle">Birebir eşleşen maç yok</div><div class="hint">Daha az oran seç. ${st?.comp && !st.comp.done ? "Bu ligin geçmişi hâlâ toplanıyor, birkaç dakika sonra tekrar dene." : ""}</div></div>`;
-  const max = r.scores[0]?.cnt || 1;
-  let h = `<div class="card" id="res"><div class="resTitle">${nf(r.total)} birebir eşleşen maç</div>
-    <div class="boxRow">${box("MS 1", pct(r.home, r.total), r.home)}${box("MS X", pct(r.draw, r.total), r.draw)}${box("MS 2", pct(r.away, r.total), r.away)}</div>
-    <div class="boxRow">${box("1.5 Üst", pct(r.over15, r.total), r.over15)}${box("2.5 Üst", pct(r.over25, r.total), r.over25)}${box("3.5 Üst", pct(r.over35, r.total), r.over35)}</div>
-    <div class="boxRow">${box("KG Var", pct(r.btts, r.total), r.btts)}${box("KG Yok", pct(r.total - r.btts, r.total), r.total - r.btts)}<div class="box"><div class="v">${r.avg ?? "-"}</div><div class="l">Ort. Gol</div></div></div></div>`;
-  h += htBlock(r.ht);
-  h += `<div class="section">Skor Dağılımı</div><div class="card">` + r.scores.map(x =>
-    `<div class="scoreRow"><span class="scoreName">${esc(x.score)}</span><div class="barBg"><div class="bar" style="width:${x.cnt / max * 100}%"></div></div><span class="scoreCnt">${x.cnt} · %${pct(x.cnt, r.total)}</span></div>`).join("") + `</div>`;
-  h += `<div class="section">Eşleşen Maçlar</div><div class="card">` + r.recent.map(x =>
-    `<div class="hist"><div class="n"><div class="ell" style="font-weight:600">${esc(x.home)} – ${esc(x.away)}</div><div class="meta ell">${new Date(x.ts).toLocaleDateString("tr-TR")} · ${esc(x.comp)}</div></div><span class="gold">${x.hg}-${x.ag}${x.hth >= 0 ? `<span class="htS">İY ${x.hth}-${x.hta}</span>` : ""}</span></div>`).join("") + `</div>`;
+
+// ---- Kombine olasilik ----
+// r = [hg, ag, hth, hta, gun]
+const OUT = [
+  ["MS 1", r => r[0] > r[1]], ["MS X", r => r[0] === r[1]], ["MS 2", r => r[0] < r[1]],
+  ["1.5 Üst", r => r[0] + r[1] >= 2], ["2.5 Üst", r => r[0] + r[1] >= 3], ["2.5 Alt", r => r[0] + r[1] <= 2],
+  ["3.5 Üst", r => r[0] + r[1] >= 4], ["KG Var", r => r[0] > 0 && r[1] > 0], ["KG Yok", r => !(r[0] > 0 && r[1] > 0)],
+  ["Ev gol atar", r => r[0] > 0], ["Dep gol atar", r => r[1] > 0],
+  ["İY 1", r => r[2] > r[3], 1], ["İY X", r => r[2] === r[3], 1], ["İY 2", r => r[2] < r[3], 1],
+  ["İY 0.5 Üst", r => r[2] + r[3] >= 1, 1], ["İY 1.5 Üst", r => r[2] + r[3] >= 2, 1],
+  ["2Y daha gollü", r => (r[0] + r[1] - r[2] - r[3]) > (r[2] + r[3]), 1],
+];
+function comboCard(r) {
+  const rows = r.rows || [];
+  if (!rows.length) return "";
+  let h = `<div class="section">Kombine Olasılık</div><div class="card"><div class="hint">Birden fazla sonuç seç: eşleşen maçların kaçında hepsi birlikte olmuş?</div><div class="wrapChips">` +
+    OUT.map(([k], i) => `<button class="cmb ${S.combo.includes(i) ? "on" : ""}" data-cmb="${i}">${k}</button>`).join("") + `</div>`;
+  if (S.combo.length) {
+    const needHT = S.combo.some(i => OUT[i][2]);
+    const base = needHT ? rows.filter(x => x[2] >= 0 && x[3] >= 0) : rows;
+    const k = base.filter(x => S.combo.every(i => OUT[i][1](x))).length;
+    const n = base.length;
+    const p = n ? k / n : 0;
+    h += `<div class="cmbRes"><span class="p">%${pct(k, n)}</span><span class="b">${k} / ${n} maç</span><span class="hint">aralık ${ciTxt(k, n)}</span>${p > 0 ? `<span class="pill">adil oran <b>${(1 / p).toFixed(2)}</b></span>` : ""}</div>
+      <div class="hint">${S.combo.map(i => OUT[i][0]).join(" + ")}${needHT ? " · sadece ilk yarı skoru bilinen maçlar" : ""}${r.total > rows.length ? ` · en yeni ${nf(rows.length)} maç üzerinden` : ""}. Adil oran = 1 / olasılık; bahis sitesindeki kombine oran bundan yüksekse geçmişe göre değerli.</div>
+      <div><button class="btn2" data-cmbclear>Temizle</button></div>`;
+  }
+  return h + `</div>`;
+}
+
+// ---- Skor isi haritasi ----
+function heatmapCard(r) {
+  const rows = r.rows || []; if (!rows.length) return "";
+  const g = Array.from({ length: 5 }, () => Array(5).fill(0));
+  rows.forEach(x => { g[Math.min(4, x[0])][Math.min(4, x[1])]++; });
+  const max = Math.max(1, ...g.flat()), n = rows.length;
+  const lab = i => i === 4 ? "4+" : String(i);
+  let h = `<div class="section">Skor Isı Haritası</div><div class="card"><div class="hint">Satır: ev sahibi golü · sütun: deplasman golü</div><div class="hmWrap"><div class="hm"><div class="h"></div>`;
+  for (let a = 0; a < 5; a++) h += `<div class="h">${lab(a)}</div>`;
+  for (let hg = 0; hg < 5; hg++) {
+    h += `<div class="h">${lab(hg)}</div>`;
+    for (let ag = 0; ag < 5; ag++) {
+      const c = g[hg][ag], a = c / max;
+      const bg = c ? `rgba(20,211,168,${(0.12 + a * 0.78).toFixed(2)})` : "transparent";
+      const fg = a > 0.55 ? "#06231d" : "var(--text)";
+      h += `<div class="c" style="background:${bg};color:${fg}">${c ? "%" + pct(c, n) : "·"}<small>${c || ""}</small></div>`;
+    }
+  }
+  return h + `</div></div></div>`;
+}
+
+// ---- IY -> MS akis cizimi ----
+function flowCard(r) {
+  const rows = (r.rows || []).filter(x => x[2] >= 0 && x[3] >= 0);
+  if (rows.length < 3) return "";
+  const res = (a, b) => a > b ? 0 : a === b ? 1 : 2;
+  const m = [[0,0,0],[0,0,0],[0,0,0]];
+  rows.forEach(x => m[res(x[2], x[3])][res(x[0], x[1])]++);
+  const T = rows.length, W = 340, H = 220, nw = 12, gap = 10, xL = 64, xR = W - 64;
+  const usable = H - gap * 2;
+  const L = [0,1,2].map(i => m[i][0] + m[i][1] + m[i][2]);
+  const R = [0,1,2].map(j => m[0][j] + m[1][j] + m[2][j]);
+  const sc = usable / T;
+  const pos = arr => { let y = 0; return arr.map(v => { const o = { y, h: v * sc }; y += v * sc + gap; return o; }); };
+  const LP = pos(L), RP = pos(R);
+  const colors = ["#14D3A8", "#5B6785", "#F5C542"], names = ["1", "X", "2"];
+  const lOff = LP.map(p => p.y), rOff = RP.map(p => p.y);
+  let paths = "";
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    const v = m[i][j]; if (!v) continue;
+    const hh = v * sc, y0 = lOff[i], y1 = rOff[j]; lOff[i] += hh; rOff[j] += hh;
+    const x0 = xL + nw, x1 = xR, xm = (x0 + x1) / 2;
+    paths += `<path d="M${x0},${y0} C${xm},${y0} ${xm},${y1} ${x1},${y1} L${x1},${y1 + hh} C${xm},${y1 + hh} ${xm},${y0 + hh} ${x0},${y0 + hh} Z" fill="${colors[j]}" fill-opacity="0.38"><title>İY ${names[i]} → MS ${names[j]}: ${v}</title></path>`;
+  }
+  let nodes = "";
+  for (let i = 0; i < 3; i++) {
+    if (L[i]) nodes += `<rect x="${xL}" y="${LP[i].y}" width="${nw}" height="${Math.max(1, LP[i].h)}" rx="3" fill="#E6EDF7"/><text x="${xL - 6}" y="${LP[i].y + LP[i].h / 2 + 4}" text-anchor="end" font-size="11" fill="#E6EDF7" font-weight="700">İY ${names[i]}</text><text x="${xL - 6}" y="${LP[i].y + LP[i].h / 2 + 16}" text-anchor="end" font-size="10" fill="#8A97B1">%${pct(L[i], T)}</text>`;
+    if (R[i]) nodes += `<rect x="${xR}" y="${RP[i].y}" width="${nw}" height="${Math.max(1, RP[i].h)}" rx="3" fill="${colors[i]}"/><text x="${xR + nw + 6}" y="${RP[i].y + RP[i].h / 2 + 4}" font-size="11" fill="#E6EDF7" font-weight="700">MS ${names[i]}</text><text x="${xR + nw + 6}" y="${RP[i].y + RP[i].h / 2 + 16}" font-size="10" fill="#8A97B1">%${pct(R[i], T)}</text>`;
+  }
+  return `<div class="section">İlk Yarıdan Maç Sonuna</div><div class="card"><svg viewBox="0 0 ${W} ${H + gap}" width="100%" style="max-width:520px;align-self:center" role="img" aria-label="İlk yarı sonucundan maç sonucuna akış">${paths}${nodes}</svg>
+    <div class="hint">Şeritlerin kalınlığı o yolu izleyen maç sayısı. ${nf(T)} maç (ilk yarı skoru bilinen).</div></div>`;
+}
+
+// ---- Zaman cizgisi (ceyrek yil) ----
+function timelineCard(r) {
+  const rows = r.rows || []; if (rows.length < 3) return "";
+  const bins = new Map();
+  rows.forEach(x => {
+    const d = dayToDate(x[4]); const key = d.getUTCFullYear() * 10 + Math.floor(d.getUTCMonth() / 3) + 1;
+    if (!bins.has(key)) bins.set(key, [0, 0, 0]);
+    bins.get(key)[x[0] > x[1] ? 0 : x[0] === x[1] ? 1 : 2]++;
+  });
+  const keys = [...bins.keys()].sort((a, b) => a - b);
+  const maxN = Math.max(...keys.map(k => bins.get(k).reduce((a, b) => a + b, 0)));
+  let h = `<div class="section">Zaman Çizgisi</div><div class="card"><div class="legend"><span><i style="background:var(--teal)"></i>MS 1</span><span><i style="background:var(--gray)"></i>X</span><span><i style="background:var(--gold)"></i>MS 2</span></div><div class="tl">`;
+  for (const k of keys) {
+    const [a, b, c] = bins.get(k), n = a + b + c;
+    const fill = n / maxN;
+    h += `<div class="tlCol"><div class="tlBar" title="${n} maç"><div style="height:${(fill * 100).toFixed(1)}%;display:flex;flex-direction:column-reverse;margin-top:auto">
+      <span style="height:${a / n * 100}%;background:var(--teal)"></span><span style="height:${b / n * 100}%;background:var(--gray)"></span><span style="height:${c / n * 100}%;background:var(--gold)"></span></div></div>
+      <div class="hint b">${n}</div><div class="hint">${String(Math.floor(k / 10)).slice(2)}/Ç${k % 10}</div></div>`;
+  }
+  return h + `</div><div class="hint">Her sütun bir çeyrek yıl. Yükseklik maç sayısı, renkler sonuç dağılımı. Sonuçlar dönemlere eşit dağılmıyorsa dikkat.</div></div>`;
+}
+
+// ===== RADAR =====
+function leaguesOfDay() {
+  const map = new Map();
+  S.matches.filter(m => !m.score && (m.status === "" || m.status === "scheduled")).forEach(m => {
+    const k = m.competition_id; if (!k) return;
+    if (!map.has(k)) map.set(k, { id: k, name: m.competition || "Lig", n: 0 });
+    map.get(k).n++;
+  });
+  return [...map.values()].sort((a, b) => b.n - a.n);
+}
+function radarTargets() {
+  const set = new Set(S.radar.leagues);
+  return S.matches.filter(m => !m.score && (m.status === "" || m.status === "scheduled") && set.has(m.competition_id)).slice(0, RADAR_MAX);
+}
+function signals(it) {
+  const s = it.stats, n = s.total, o = it.odds;
+  const list = [
+    ["MS 1", s.home, o.ms1], ["MS X", s.draw, o.msx], ["MS 2", s.away, o.ms2],
+    ["2.5 Üst", s.over25, o.o25], ["KG Var", s.btts, o.kgv],
+  ].filter(x => x[2] > 100).map(([k, c, odd]) => {
+    const imp = 100 / odd, p = c / n, [lo] = wilson(c, n);
+    return { k, c, n, odd, imp, p, lo, edge: p - imp, strong: lo > imp };
+  });
+  return list.filter(x => x.edge > 0).sort((a, b) => (b.lo - b.imp) - (a.lo - a.imp));
+}
+async function runRadar() {
+  const R = S.radar; const targets = radarTargets();
+  if (!targets.length) return;
+  Object.assign(R, { running: true, stop: false, done: 0, total: targets.length, items: [], errors: 0, msg: "" });
+  render();
+  const bm = S.bm; let next = 0;
+  async function worker() {
+    while (!R.stop && next < targets.length) {
+      const m = targets[next++];
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const r = await call("radar_one", { match_id: m.id, bm });
+          if (!r.skip && r.stats && r.stats.total >= RADAR_MIN) {
+            const it = { m, odds: r.odds, stats: r.stats, filters: r.filters };
+            it.sig = signals(it);
+            if (it.sig.length) R.items.push(it);
+          }
+          break;
+        } catch (e) {
+          if (/limit/i.test(e.message) && attempt < 2) { R.msg = "API limiti, kısa bekleme…"; render(); await sleep(15000); R.msg = ""; continue; }
+          R.errors++; break;
+        }
+      }
+      R.done++;
+      R.items.sort((a, b) => (b.sig[0].lo - b.sig[0].imp) - (a.sig[0].lo - a.sig[0].imp));
+      if (S.tab === "radar") render();
+    }
+  }
+  await Promise.all([worker(), worker(), worker()]);
+  R.running = false; render();
+}
+function renderRadar() {
+  const R = S.radar;
+  let h = bmChips(null, S.bm) + dateRow();
+  h += `<div class="card"><div class="b">Günün Radarı</div><div class="hint">Seçtiğin liglerde başlamamış maçları tarar. Her maçın MS 1/X/2 oranlarıyla birebir aynı geçmiş maçlara bakar. Geçmişte oranın ima ettiğinden daha sık çıkan sonuçları sıralar.</div></div>`;
+  if (S.listLoading) return h + `<div class="spin"></div>`;
+  const lg = leaguesOfDay();
+  if (!lg.length) return h + `<div class="card"><div class="hint">Bu tarihte başlamamış, oranı olan maç yok. Başka gün seç.</div></div>`;
+  const set = new Set(R.leagues);
+  h += `<div class="section">Ligler</div><div class="card"><div class="wrapChips">` +
+    lg.map(l => `<button class="chip ${set.has(l.id) ? "on" : ""}" data-lg="${esc(l.id)}">${esc(l.name)} · ${l.n}</button>`).join("") +
+    `</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn2" data-lgall>İlk 10 ligi seç</button><button class="btn2 red" data-lgnone>Temizle</button></div></div>`;
+  const tg = radarTargets();
+  if (R.running) {
+    h += `<div class="card"><div class="b">Taranıyor: ${R.done} / ${R.total}</div><div class="prog"><span style="width:${R.total ? R.done / R.total * 100 : 0}%"></span></div>${R.msg ? `<div class="hint">${esc(R.msg)}</div>` : ""}<div><button class="btn2 red" data-rstop>Durdur</button></div></div>`;
+  } else {
+    h += `<button class="btn" data-rstart ${tg.length ? "" : "disabled"}>${tg.length ? `Taramayı başlat (${tg.length} maç)` : "Önce lig seç"}</button>`;
+    if (tg.length >= RADAR_MAX) h += `<div class="hint">Bir taramada en fazla ${RADAR_MAX} maç taranır.</div>`;
+  }
+  if (R.total && !R.running) h += `<div class="hint">${R.done} maç tarandı · ${R.items.length} maçta sinyal${R.errors ? ` · ${R.errors} hata` : ""}. En az ${RADAR_MIN} eşleşen maçı olanlar dikkate alındı.</div>`;
+  if (R.items.length) {
+    h += `<div class="section">Sinyaller</div><div class="card">`;
+    for (const it of R.items) {
+      const m = it.m;
+      h += `<div class="rItem"><div style="display:flex;gap:10px;align-items:center"><div class="grow"><div class="b ell">${esc(m.home)} – ${esc(m.away)}</div><div class="meta ell">${hhmm(m.utc_date)} · ${esc(m.competition)} · ${nf(it.stats.total)} eşleşen maç</div></div><button class="btn2" data-ropen="${esc(m.id)}">Analiz et</button></div>` +
+        it.sig.slice(0, 3).map(s => `<div class="sig"><span class="k">${s.k}</span><span class="grow hint">oran ${(s.odd / 100).toFixed(2)} → %${Math.round(s.imp * 100)} · geçmiş %${Math.round(s.p * 100)} (${Math.round(s.lo * 100)}+)</span><span class="tag ${s.strong ? "g" : "y"}">${s.strong ? "güçlü" : "zayıf"}</span><span class="d" style="color:var(${s.strong ? "--teal" : "--gold"})">+${Math.round(s.edge * 100)}</span></div>`).join("") + `</div>`;
+    }
+    h += `</div><div class="hint">"Güçlü": güven aralığının alt sınırı bile oranın ima ettiği olasılıktan yüksek. "Zayıf": fark var ama örnek az veya fark küçük. Geçmiş sonuçlar geleceği garanti etmez.</div>`;
+  } else if (R.total && !R.running) h += `<div class="card"><div class="hint">Bu taramada oranından belirgin şekilde sık çıkan sonuç bulunamadı.</div></div>`;
+  return h;
+}
+
+// ===== CANLI =====
+let liveTimer = null;
+async function loadLive(silent) {
+  const L = S.live;
+  if (!silent) { L.loading = true; L.error = ""; render(); }
+  try { const r = await call("live"); L.list = r.matches || []; L.error = ""; }
+  catch (e) { L.error = e.message; }
+  L.loading = false;
+  if (S.tab === "canli") render();
+}
+async function loadLiveDetail(silent) {
+  const L = S.live; const id = L.sel; if (!id) return;
+  if (!silent) { L.dLoading = true; L.detail = null; render(); }
+  try {
+    const d = await call("live_detail", { match_id: id });
+    if (L.sel !== id) return;
+    L.detail = d;
+    if (d.cols?.length) S.cols = S.cols.length ? S.cols : d.cols;
+    const keys = Object.keys(d.books || {});
+    if (!L.bm || !keys.includes(L.bm)) L.bm = keys.includes(S.bm) ? S.bm : keys[0] || null;
+  } catch (e) { if (!silent) L.detail = { error: e.message }; }
+  L.dLoading = false;
+  if (S.tab === "canli") render();
+}
+function startLiveTimer() {
+  stopLiveTimer();
+  liveTimer = setInterval(() => {
+    if (document.hidden || S.tab !== "canli") return;
+    if (S.live.sel) loadLiveDetail(true); else loadLive(true);
+  }, 30000);
+}
+function stopLiveTimer() { if (liveTimer) clearInterval(liveTimer); liveTimer = null; }
+function renderLive() {
+  const L = S.live;
+  let h = `<div class="card"><div class="b"><span class="dot"></span> Şu an oynanan maçlar</div><div class="hint">Her 30 saniyede yenilenir. Oranlar birkaç saniye gecikmeli olabilir; bahis yapmadan önce sitede kontrol et.</div><div><button class="btn2" data-lvref>Şimdi yenile</button></div></div>`;
+  if (L.sel) {
+    const m = (L.list || []).find(x => x.id === L.sel) || {};
+    const d = L.detail;
+    h += `<div><button class="btn2" data-lvback>‹ Listeye dön</button></div>`;
+    h += `<div class="card"><div class="lvHead"><div class="grow" style="text-align:right" ><div class="b">${esc(m.home)}</div></div><div class="lvBig">${d?.meta?.hg ?? m.hg ?? "-"}-${d?.meta?.ag ?? m.ag ?? "-"}</div><div class="grow"><div class="b">${esc(m.away)}</div></div></div>
+      <div class="meta" style="text-align:center"><span style="color:var(--red);font-weight:800">${d?.meta?.minute ?? m.minute ?? ""}'</span> · ${esc(m.competition)}${d?.meta?.ht ? " · İY " + esc(d.meta.ht) : ""}</div></div>`;
+    if (L.dLoading && !d) return h + `<div class="spin"></div>`;
+    if (d?.error) return h + `<div class="err">⚠️ ${esc(d.error)}</div>`;
+    if (d?.stats?.length) {
+      h += `<div class="section">İstatistik</div><div class="card">` + d.stats.map(s => {
+        const a = parseFloat(s.h) || 0, b = parseFloat(s.a) || 0, t = a + b || 1;
+        return `<div class="st"><span class="n">${esc(s.h ?? "-")}</span><div class="stBars"><div class="stLbl">${esc(s.k)}</div><div class="stTrack"><span style="width:${a / t * 100}%;background:var(--teal)"></span><span style="width:${b / t * 100}%;background:var(--gold)"></span></div></div><span class="n">${esc(s.a ?? "-")}</span></div>`;
+      }).join("") + `</div>`;
+    }
+    const books = d?.books || {};
+    const keys = Object.keys(books);
+    h += `<div class="section">Canlı Oranlar</div>`;
+    if (!keys.length) h += `<div class="card"><div class="hint">${d?.oddsError ? esc(d.oddsError) : "Bu maç için şu an canlı oran yok."}</div></div>`;
+    else {
+      h += `<div class="chips">` + keys.map(k => `<button class="chip ${k === L.bm ? "on" : ""}" data-lvbm="${esc(k)}">${esc((BOOKMAKERS.find(b => b.slug === k) || {}).name || k)}</button>`).join("") + `</div>`;
+      const cols = d.cols || S.cols; const save = S.cols; S.cols = cols;
+      h += oddsGroups(books[L.bm] || [], false);
+      S.cols = save;
+    }
+    return h;
+  }
+  if (L.loading && !L.list) return h + `<div class="spin"></div>`;
+  if (L.error) h += `<div class="err">⚠️ ${esc(L.error)}</div>`;
+  if (L.list && !L.list.length) return h + `<div class="card"><div class="hint">Şu an canlı maç yok.</div></div>`;
+  if (L.list) {
+    let lastComp = null;
+    h += `<div class="card">`;
+    for (const m of L.list) {
+      if (m.competition !== lastComp) { lastComp = m.competition; h += `<div class="lg">${esc(m.competition || "Lig")}</div>`; }
+      h += `<button class="lvItem" data-lv="${esc(m.id)}"><span class="min">${m.minute != null ? m.minute + "'" : "•"}</span><span class="grow"><span class="b ell" style="display:block">${esc(m.home)}</span><span class="b ell" style="display:block">${esc(m.away)}</span></span><span class="lvScore">${m.hg ?? "-"}<br>${m.ag ?? "-"}</span></button>`;
+    }
+    h += `</div>`;
+  }
   return h;
 }
 
@@ -285,7 +727,7 @@ function drawList() {
   const s = q.value.trim().toLocaleLowerCase("tr");
   const list = S.matches.map((m, i) => ({ m, i })).filter(({ m }) => !s || `${m.home} ${m.away} ${m.competition}`.toLocaleLowerCase("tr").includes(s));
   plist.innerHTML = list.map(({ m, i }) =>
-    `<button class="item" data-i="${i}"><span class="t">${hhmm(m.utc_date)}</span><span class="n"><div style="font-weight:600">${esc(m.home)} – ${esc(m.away)}</div><div class="meta ell">${esc(m.competition)}</div></span>${m.score ? `<span class="gold">${esc(m.score)}</span>` : ""}</button>`).join("")
+    `<button class="item" data-i="${i}"><span class="t">${hhmm(m.utc_date)}</span><span class="grow"><div class="b">${esc(m.home)} – ${esc(m.away)}</div><div class="meta ell">${esc(m.competition)}</div></span>${m.score ? `<span class="gold">${esc(m.score)}</span>` : ""}</button>`).join("")
     || `<div class="meta" style="padding:20px;text-align:center">Sonuç yok</div>`;
 }
 q.addEventListener("input", drawList);
@@ -296,23 +738,49 @@ plist.addEventListener("click", e => {
 });
 
 // ===== TIKLAMALAR =====
+document.getElementById("tabs").addEventListener("click", e => {
+  const t = e.target.closest("[data-tab]"); if (!t) return;
+  S.tab = t.dataset.tab;
+  if (S.tab === "canli") { if (!S.live.list) loadLive(); startLiveTimer(); } else stopLiveTimer();
+  render(); window.scrollTo(0, 0);
+});
 document.getElementById("app").addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t || t.disabled) return;
   const d = t.dataset;
-  if (d.bm) { S.bm = d.bm; S.filters = []; S.result = null; render(); }
+  if (d.bm) { S.bm = d.bm; S.filters = []; S.result = null; S.loo = null; render(); }
   else if (d.shift) { const x = new Date(S.day); x.setDate(x.getDate() + +d.shift); S.day = x; loadDay(); }
   else if ("today" in d) { S.day = new Date(); loadDay(); }
   else if (d.mv) { S.idx += +d.mv; loadMatch(); refreshStatus(); }
   else if ("pick" in d) { picker.hidden = false; drawList(); }
   else if (d.group) { S.open[d.group] = !S.open[d.group]; render(); }
-  else if (d.f !== undefined) { const i = +d.f; S.result = null; S.filters = S.filters.includes(i) ? S.filters.filter(x => x !== i) : [...S.filters, i]; render(); }
+  else if (d.f !== undefined) { const i = +d.f; S.result = null; S.loo = null; S.filters = S.filters.includes(i) ? S.filters.filter(x => x !== i) : [...S.filters, i]; render(); }
+  else if (d.dropf !== undefined) { const i = +d.dropf; S.filters = S.filters.filter(x => x !== i); analyze(); }
   else if ("analyze" in d) analyze();
+  else if (d.cmb !== undefined) { const i = +d.cmb; S.combo = S.combo.includes(i) ? S.combo.filter(x => x !== i) : [...S.combo, i]; render(); }
+  else if ("cmbclear" in d) { S.combo = []; render(); }
+  // radar
+  else if (d.lg) { const set = new Set(S.radar.leagues); set.has(d.lg) ? set.delete(d.lg) : set.add(d.lg); S.radar.leagues = [...set]; store.set("radarLeagues", S.radar.leagues); render(); }
+  else if ("lgall" in d) { S.radar.leagues = leaguesOfDay().slice(0, 10).map(l => l.id); store.set("radarLeagues", S.radar.leagues); render(); }
+  else if ("lgnone" in d) { S.radar.leagues = []; store.set("radarLeagues", []); render(); }
+  else if ("rstart" in d) runRadar();
+  else if ("rstop" in d) { S.radar.stop = true; }
+  else if (d.ropen) {
+    const it = S.radar.items.find(x => x.m.id === d.ropen); const i = S.matches.findIndex(m => m.id === d.ropen);
+    if (i < 0 || !it) return;
+    S.pendingAuto = { id: d.ropen, bm: S.bm, cols: it.filters.map(f => f.col) };
+    S.tab = "analiz"; stopLiveTimer(); S.idx = i; window.scrollTo(0, 0); loadMatch(); refreshStatus();
+  }
+  // canli
+  else if ("lvref" in d) { S.live.sel ? loadLiveDetail() : loadLive(); }
+  else if (d.lv) { S.live.sel = d.lv; S.live.detail = null; window.scrollTo(0, 0); loadLiveDetail(); }
+  else if ("lvback" in d) { S.live.sel = null; S.live.detail = null; render(); loadLive(true); }
+  else if (d.lvbm) { S.live.bm = d.lvbm; render(); }
 });
 
 render();
 loadDay();
 refreshStatus();
-setInterval(refreshStatus, 30000);
+setInterval(() => { if (!document.hidden && S.tab === "analiz") refreshStatus(); }, 30000);
 </script>
 </body>
 </html>
