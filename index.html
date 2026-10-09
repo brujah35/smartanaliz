@@ -183,7 +183,7 @@ const BOOKMAKERS = [
 ];
 const MIN_SAMPLE = 20;      // bundan az eslesmede "az ornek" uyarisi
 const RADAR_MIN = 15;       // radarda dikkate alinacak en az mac
-const RADAR_MAX = 60;       // bir taramada en fazla mac
+const RADAR_MAX = 150;      // bir taramada en fazla mac (API harcamaz)
 
 async function call(action, body = {}) {
   const r = await fetch(FN_URL, {
@@ -226,7 +226,7 @@ const S = {
   bm: "bet365", day: new Date(), matches: [], idx: 0, listLoading: false,
   books: null, cols: [], oddsLoading: false, filters: [],
   open: { "Maç Sonucu": true, "Alt/Üst": true, "Karşılıklı Gol": true, "Açılış Oranı (MS)": true },
-  result: null, analyzing: false, error: "", status: null,
+  result: null, analyzing: false, error: "", status: null, oddsAt: null, oddsSource: "",
   loo: null, looLoading: false, combo: [], pendingAuto: null,
   radar: { leagues: store.get("radarLeagues", []), running: false, done: 0, total: 0, items: [], errors: 0, stop: false, msg: "" },
   live: { list: null, loading: false, error: "", sel: null, detail: null, dLoading: false, bm: null },
@@ -249,7 +249,7 @@ async function loadDay() {
     const r = await call("fixtures", { date: ymd(S.day) });
     if (my !== seq) return;
     S.matches = r.matches || [];
-    if (!S.matches.length) S.error = "Bu tarihte oranı olan maç bulunamadı.";
+    if (!S.matches.length) S.error = ymd(S.day) < ymd(new Date()) ? "Bu tarihte kayıtlı maç yok." : "Bu gün için oranı açıklanmış maç henüz yok. Toplayıcı bu haftanın maçlarını günde 2 kez günceller.";
   } catch (e) { if (my === seq) S.error = e.message; }
   if (my !== seq) return;
   S.listLoading = false; render();
@@ -260,12 +260,13 @@ async function loadMatch() {
   const my = ++seq;
   Object.assign(S, { books: null, result: null, loo: null, error: "", filters: [], oddsLoading: true });
   render();
-  if (m.competition_id) call("prioritize", { competition_id: m.competition_id }).then(s => { if (my === seq) { S.status = s; render(); } }).catch(() => {});
   try {
     const r = await call("odds", { match_id: m.id });
     if (my !== seq) return;
-    S.books = r.books || {}; S.cols = r.cols || [];
-    if (!Object.keys(S.books).length) S.error = "Bu maç için oran bulunamadı.";
+    S.books = r.books || {}; S.cols = r.cols || []; S.oddsAt = r.at || null; S.oddsSource = r.source || "";
+    if (!Object.keys(S.books).length) S.error = r.source === "pending"
+      ? "Bu maçın oranları sırada. Toplayıcı birkaç dakika içinde yükler (API kotası doluysa kota yenilenince)."
+      : "API bu maç için oran vermedi.";
   } catch (e) { if (my === seq) S.error = e.message; }
   if (my !== seq) return;
   S.oddsLoading = false;
@@ -316,15 +317,23 @@ function box(label, k, n, extra = "") {
   return `<div class="box"><div class="v">%${pct(k, n)}</div><div class="l">${label} · ${k}</div><div class="ci">${ciTxt(k, n)}${extra}</div></div>`;
 }
 
+// ===== DURUM KARTI =====
+function statusCard(st) {
+  let h = `<div class="card"><div class="b">Veritabanı: ${nf(st?.total)} geçmiş maç</div>`;
+  if (st) h += `<div class="hint">Bu hafta: ${nf(st.week)} oranlı maç · ${nf(st.weekOdds)} tanesinin oranı yüklü</div>`;
+  const q = st?.quota;
+  if (q && q.until > Date.now()) h += `<div class="hint" style="color:var(--red)">API aylık kotası doldu. Yeni oranlar ${new Date(q.until).toLocaleString("tr-TR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })} sonra gelir. Yüklenmiş oranlar ve tüm analizler çalışır.</div>`;
+  else if (q && q.remaining != null && q.limit > 0) h += `<div class="hint">API kotası: ${nf(q.remaining)} / ${nf(q.limit)} kaldı</div>`;
+  if (st?.last?.msg) h += `<div class="hint">Toplayıcı: ${esc(st.last.msg)}</div>`;
+  return h + `</div>`;
+}
+
 // ===== ANALIZ EKRANI =====
 function renderAnaliz() {
   const row = rowOf(), m = cur(), st = S.status;
   let h = bmChips(S.books, S.bm);
 
-  h += `<div class="card"><div class="b">Veritabanı: ${nf(st?.total)} maç</div>`;
-  if (st?.comp) h += `<div class="hint" style="color:var(${st.comp.done ? "--teal" : "--gold"})">Bu lig: ${nf(st.comp.count)} maç · ${st.comp.done ? "2 yıl tamam ✓" : "öncelikli toplanıyor…"}</div>`;
-  if (st?.refresh > 0) h += `<div class="hint">Eski maçlar açılış oranı ve ilk yarı için güncelleniyor: ${nf(st.refresh)} kaldı</div>`;
-  h += `<div class="hint">${st?.oldest ? "Tüm ligler " + esc(st.oldest) + " tarihine kadar dolu" : "Tüm ligler toplanıyor"}${st?.last?.msg ? " · " + esc(st.last.msg) : ""}</div></div>`;
+  h += statusCard(st);
 
   h += dateRow();
 
@@ -342,6 +351,7 @@ function renderAnaliz() {
   h += `</div>`;
 
   h += `<div class="section">Oranlar · dokunarak filtreye ekle</div>`;
+  if (!S.oddsLoading && row) h += `<div class="hint">${S.oddsSource === "history" ? "Oynanmış maç: kaydedilen kapanış oranları" : S.oddsAt ? "Oranlar " + new Date(S.oddsAt).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " itibarıyla" : ""}</div>`;
   if (S.oddsLoading) h += `<div class="spin"></div>`;
   else if (!row) h += `<div class="card"><div class="hint">${S.books ? "Bu site bu maç için oran vermiyor, başka site seç." : "Oran bekleniyor"}</div></div>`;
   else h += oddsGroups(row, true);
@@ -351,7 +361,7 @@ function renderAnaliz() {
     h += `<div class="card"><div class="b">Seçilen Oranlar (${S.filters.length})</div>` +
       S.filters.map(i => `<button class="sel" data-f="${i}">${esc(S.cols[i]?.l)} <b>${fmt(row[i])}</b>  ✕</button>`).join("") +
       `<div class="hint">Geçmişte bu oranların HEPSİ birebir aynı olan maçlar aranır.</div>` +
-      (hasOpen && S.status?.refresh > 0 ? `<div class="hint" style="color:var(--gold)">Açılış oranları eski maçlarda güncellendikçe eşleşme sayısı artacak.</div>` : "") + `</div>`;
+      (hasOpen ? `<div class="hint" style="color:var(--gold)">Açılış oranı kayıtlı geçmiş maç sayısı az; açılış filtresiyle az eşleşme çıkabilir.</div>` : "") + `</div>`;
   }
 
   h += `<button class="btn" data-analyze ${!row || !S.filters.length || S.analyzing ? "disabled" : ""}>${S.analyzing ? "Aranıyor…" : "Analiz Et"}</button>`;
@@ -379,7 +389,7 @@ function oddsGroups(row, selectable) {
 
 function results(r) {
   if (!r || !r.total) {
-    let h = `<div class="card" id="res"><div class="resTitle">Birebir eşleşen maç yok</div><div class="hint">Daha az oran seç. ${S.status?.comp && !S.status.comp.done ? "Bu ligin geçmişi hâlâ toplanıyor, birkaç dakika sonra tekrar dene." : ""}</div></div>`;
+    let h = `<div class="card" id="res"><div class="resTitle">Birebir eşleşen maç yok</div><div class="hint">Daha az oran seç.</div></div>`;
     return h + looCard(r);
   }
   const n = r.total;
@@ -559,9 +569,10 @@ function timelineCard(r) {
 }
 
 // ===== RADAR =====
+const isUpcoming = m => !m.score && (m.status === "" || m.status === "scheduled") && new Date(m.utc_date).getTime() > Date.now();
 function leaguesOfDay() {
   const map = new Map();
-  S.matches.filter(m => !m.score && (m.status === "" || m.status === "scheduled")).forEach(m => {
+  S.matches.filter(isUpcoming).forEach(m => {
     const k = m.competition_id; if (!k) return;
     if (!map.has(k)) map.set(k, { id: k, name: m.competition || "Lig", n: 0 });
     map.get(k).n++;
@@ -570,7 +581,7 @@ function leaguesOfDay() {
 }
 function radarTargets() {
   const set = new Set(S.radar.leagues);
-  return S.matches.filter(m => !m.score && (m.status === "" || m.status === "scheduled") && set.has(m.competition_id)).slice(0, RADAR_MAX);
+  return S.matches.filter(m => isUpcoming(m) && set.has(m.competition_id)).slice(0, RADAR_MAX);
 }
 function signals(it) {
   const s = it.stats, n = s.total, o = it.odds;
@@ -602,7 +613,7 @@ async function runRadar() {
           }
           break;
         } catch (e) {
-          if (/limit/i.test(e.message) && attempt < 2) { R.msg = "API limiti, kısa bekleme…"; render(); await sleep(15000); R.msg = ""; continue; }
+          if (/sunucu|fetch|network/i.test(e.message) && attempt < 2) { await sleep(2000); continue; }
           R.errors++; break;
         }
       }
@@ -617,7 +628,7 @@ async function runRadar() {
 function renderRadar() {
   const R = S.radar;
   let h = bmChips(null, S.bm) + dateRow();
-  h += `<div class="card"><div class="b">Günün Radarı</div><div class="hint">Seçtiğin liglerde başlamamış maçları tarar. Her maçın MS 1/X/2 oranlarıyla birebir aynı geçmiş maçlara bakar. Geçmişte oranın ima ettiğinden daha sık çıkan sonuçları sıralar.</div></div>`;
+  h += `<div class="card"><div class="b">Günün Radarı</div><div class="hint">Seçtiğin liglerde başlamamış maçları tarar. Her maçın MS 1/X/2 oranlarıyla birebir aynı geçmiş maçlara bakar. Geçmişte oranın ima ettiğinden daha sık çıkan sonuçları sıralar. Sadece yüklenmiş oranları kullanır, API harcamaz.</div></div>`;
   if (S.listLoading) return h + `<div class="spin"></div>`;
   const lg = leaguesOfDay();
   if (!lg.length) return h + `<div class="card"><div class="hint">Bu tarihte başlamamış, oranı olan maç yok. Başka gün seç.</div></div>`;
@@ -674,12 +685,12 @@ function startLiveTimer() {
   liveTimer = setInterval(() => {
     if (document.hidden || S.tab !== "canli") return;
     if (S.live.sel) loadLiveDetail(true); else loadLive(true);
-  }, 30000);
+  }, 60000);
 }
 function stopLiveTimer() { if (liveTimer) clearInterval(liveTimer); liveTimer = null; }
 function renderLive() {
   const L = S.live;
-  let h = `<div class="card"><div class="b"><span class="dot"></span> Şu an oynanan maçlar</div><div class="hint">Her 30 saniyede yenilenir. Oranlar birkaç saniye gecikmeli olabilir; bahis yapmadan önce sitede kontrol et.</div><div><button class="btn2" data-lvref>Şimdi yenile</button></div></div>`;
+  let h = `<div class="card"><div class="b"><span class="dot"></span> Şu an oynanan maçlar</div><div class="hint">Canlı veriler herkes için ortak, 1–2 dakikada bir yenilenir ve günlük sınırlıdır. Oranlar gecikmeli olabilir; bahis yapmadan önce sitede kontrol et.</div><div><button class="btn2" data-lvref>Şimdi yenile</button></div></div>`;
   if (L.sel) {
     const m = (L.list || []).find(x => x.id === L.sel) || {};
     const d = L.detail;
