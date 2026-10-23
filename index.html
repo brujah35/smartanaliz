@@ -139,6 +139,18 @@ h1{margin:0;font-size:22px;font-weight:800}
 .stLbl{text-align:center;color:var(--sub);font-size:12px}
 .stTrack{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--bg)}
 .lg{font-size:12px;color:var(--sub);font-weight:700;margin-top:4px}
+
+/* kuponlar */
+.cpCard{border-left:4px solid var(--teal)}
+.cpCard.cpR{border-left-color:var(--gold)}
+.cpHead{display:flex;align-items:center;gap:10px}
+.cpOdd{margin-left:auto;font-size:26px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.leg{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--border)}
+.legTop{display:flex;gap:10px;align-items:center}
+.legTop .t{color:var(--teal);font-weight:700;width:46px;flex:none}
+.legPick{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pk{font-weight:800;background:var(--bg);border-radius:8px;padding:4px 9px}
+.pkOdd{font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
 /* secici */
 #picker{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
 .pHead{display:flex;gap:12px;align-items:center;padding:16px;max-width:820px;width:100%;margin:0 auto}
@@ -157,7 +169,7 @@ h1{margin:0;font-size:22px;font-weight:800}
   <nav class="tabs" id="tabs">
     <button class="tab on" data-tab="analiz">Analiz</button>
     <button class="tab" data-tab="radar">Radar</button>
-    <button class="tab" data-tab="canli"><span class="dot"></span>Canlı</button>
+    <button class="tab" data-tab="kupon">Kuponlar</button>
   </nav>
 </header>
 <main class="wrap" id="app"></main>
@@ -181,6 +193,8 @@ const BOOKMAKERS = [
   { slug: "betmgm-uk", name: "BetMGM UK" },
   { slug: "betfair-exchange", name: "Betfair Exchange" },
 ];
+const OPEN_LABELS = ["Açılış MS 1", "Açılış MS X", "Açılış MS 2"];
+const TOLS = [[0, "Birebir"], [3, "±0.03"], [5, "±0.05"], [10, "±0.10"], [20, "±0.20"]];
 const MIN_SAMPLE = 20;      // bundan az eslesmede "az ornek" uyarisi
 const RADAR_MIN = 15;       // radarda dikkate alinacak en az mac
 const RADAR_MAX = 150;      // bir taramada en fazla mac (API harcamaz)
@@ -229,7 +243,8 @@ const S = {
   result: null, analyzing: false, error: "", status: null, oddsAt: null, oddsSource: "",
   loo: null, looLoading: false, combo: [], pendingAuto: null,
   radar: { leagues: store.get("radarLeagues", []), running: false, done: 0, total: 0, items: [], errors: 0, stop: false, msg: "" },
-  live: { list: null, loading: false, error: "", sel: null, detail: null, dLoading: false, bm: null },
+  cp: { data: null, loading: false, error: "", day: 0 },
+  tol: store.get("tol", 0),
 };
 let seq = 0;
 const cur = () => S.matches[S.idx];
@@ -252,7 +267,13 @@ async function loadDay() {
     if (!S.matches.length) S.error = ymd(S.day) < ymd(new Date()) ? "Bu tarihte kayıtlı maç yok." : "Bu gün için oranı açıklanmış maç henüz yok. Toplayıcı bu haftanın maçlarını günde 2 kez günceller.";
   } catch (e) { if (my === seq) S.error = e.message; }
   if (my !== seq) return;
-  S.listLoading = false; render();
+  S.listLoading = false;
+  if (S.pendingOpenId) {
+    const i = S.matches.findIndex(m => m.id === S.pendingOpenId);
+    if (i >= 0) { S.idx = i; S.pendingAuto = { id: S.pendingOpenId, bm: S.bm }; }
+    S.pendingOpenId = null;
+  }
+  render();
   if (S.matches.length) loadMatch();
 }
 async function loadMatch() {
@@ -273,7 +294,7 @@ async function loadMatch() {
   // Radardan gelindiyse filtreleri otomatik sec ve analiz et
   if (S.pendingAuto && S.pendingAuto.id === m.id) {
     const p = S.pendingAuto; S.pendingAuto = null;
-    if (S.books[p.bm]) { S.bm = p.bm; S.filters = p.cols.filter(c => (S.books[p.bm][c] || 0) > 0); render(); if (S.filters.length) return analyze(); }
+    if (S.books[p.bm]) { S.bm = p.bm; S.filters = OPEN_LABELS.map(colByLabel).filter(c => c >= 0 && (S.books[p.bm][c] || 0) > 0); render(); if (S.filters.length) return analyze(); }
   }
   render();
 }
@@ -283,7 +304,7 @@ async function analyze() {
   Object.assign(S, { analyzing: true, error: "", result: null, loo: null }); render();
   const filters = S.filters.map(col => ({ col, v: row[col] }));
   try {
-    const r = await call("analyze", { bm: S.bm, filters, exclude_id: cur()?.id });
+    const r = await call("analyze", { bm: S.bm, filters, exclude_id: cur()?.id, tol: S.tol });
     if (my !== seq) return;
     S.result = r.result;
   } catch (e) { if (my === seq) S.error = e.message; }
@@ -292,7 +313,7 @@ async function analyze() {
   if (S.result) document.getElementById("res")?.scrollIntoView({ behavior: "smooth", block: "start" });
   if (S.result && filters.length >= 2) {
     S.looLoading = true; render();
-    try { const r = await call("loo", { bm: S.bm, filters, exclude_id: cur()?.id }); if (my === seq) S.loo = r.items || []; }
+    try { const r = await call("loo", { bm: S.bm, filters, exclude_id: cur()?.id, tol: S.tol }); if (my === seq) S.loo = r.items || []; }
     catch { if (my === seq) S.loo = []; }
     if (my === seq) { S.looLoading = false; render(); }
   }
@@ -301,7 +322,7 @@ async function analyze() {
 // ===== CIZIM: ORTAK =====
 function render() {
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.tab === S.tab));
-  const h = S.tab === "radar" ? renderRadar() : S.tab === "canli" ? renderLive() : renderAnaliz();
+  const h = S.tab === "radar" ? renderRadar() : S.tab === "kupon" ? renderCoupons() : renderAnaliz();
   document.getElementById("app").innerHTML = h;
 }
 function bmChips(books, cur) {
@@ -309,6 +330,9 @@ function bmChips(books, cur) {
     const has = !books || !!books[b.slug];
     return `<button class="chip ${b.slug === cur ? "on" : ""} ${has ? "" : "off"}" data-bm="${b.slug}">${b.name}</button>`;
   }).join("") + `</div>`;
+}
+function tolChips() {
+  return `<div class="wrapChips">` + TOLS.map(([v, t]) => `<button class="chip ${S.tol === v ? "on" : ""}" data-tol="${v}">${t}</button>`).join("") + `</div>`;
 }
 function dateRow() {
   return `<div class="dateRow"><button class="arr" data-shift="-1" aria-label="Önceki gün">‹</button><button class="dateText" data-today>${trDate(S.day)}</button><button class="arr" data-shift="1" aria-label="Sonraki gün">›</button></div>`;
@@ -361,7 +385,7 @@ function renderAnaliz() {
     h += `<div class="card"><div class="b">Seçilen Oranlar (${S.filters.length})</div>` +
       S.filters.map(i => `<button class="sel" data-f="${i}">${esc(S.cols[i]?.l)} <b>${fmt(row[i])}</b>  ✕</button>`).join("") +
       `<div class="hint">Geçmişte bu oranların HEPSİ birebir aynı olan maçlar aranır.</div>` +
-      (hasOpen ? `<div class="hint" style="color:var(--gold)">Açılış oranı kayıtlı geçmiş maç sayısı az; açılış filtresiyle az eşleşme çıkabilir.</div>` : "") + `</div>`;
+      (hasOpen ? `<div class="hint" style="color:var(--gold)">Açılış oranı kayıtlı geçmiş maç sayısı az; açılış filtresiyle az eşleşme çıkabilir. Gerekirse açılış oranı toleransını aç:</div>${tolChips()}` : "") + `</div>`;
   }
 
   h += `<button class="btn" data-analyze ${!row || !S.filters.length || S.analyzing ? "disabled" : ""}>${S.analyzing ? "Aranıyor…" : "Analiz Et"}</button>`;
@@ -372,7 +396,7 @@ function renderAnaliz() {
 
 function oddsGroups(row, selectable) {
   let h = "";
-  const groups = [...new Set(S.cols.map(c => c.g))];
+  const groups = [...new Set(S.cols.map(c => c.g))].sort((a, b) => (b.startsWith("Açılış") ? 1 : 0) - (a.startsWith("Açılış") ? 1 : 0));
   for (const g of groups) {
     const items = S.cols.map((c, i) => ({ c, i })).filter(x => x.c.g === g && row[x.i] > 0);
     if (!items.length) continue;
@@ -605,7 +629,7 @@ async function runRadar() {
       const m = targets[next++];
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          const r = await call("radar_one", { match_id: m.id, bm });
+          const r = await call("radar_one", { match_id: m.id, bm, tol: S.tol });
           if (!r.skip && r.stats && r.stats.total >= RADAR_MIN) {
             const it = { m, odds: r.odds, stats: r.stats, filters: r.filters };
             it.sig = signals(it);
@@ -628,7 +652,7 @@ async function runRadar() {
 function renderRadar() {
   const R = S.radar;
   let h = bmChips(null, S.bm) + dateRow();
-  h += `<div class="card"><div class="b">Günün Radarı</div><div class="hint">Seçtiğin liglerde başlamamış maçları tarar. Her maçın MS 1/X/2 oranlarıyla birebir aynı geçmiş maçlara bakar. Geçmişte oranın ima ettiğinden daha sık çıkan sonuçları sıralar. Sadece yüklenmiş oranları kullanır, API harcamaz.</div></div>`;
+  h += `<div class="card"><div class="b">Günün Radarı</div><div class="hint">Seçtiğin liglerde başlamamış maçları tarar. Her maçın <b>açılış</b> MS 1/X/2 oranlarıyla aynı (veya toleransla yakın) açılan geçmiş maçlara bakar. Geçmişte oranın ima ettiğinden daha sık çıkan sonuçları sıralar. Kapanış oranları kullanılmaz. Sadece yüklenmiş oranları kullanır, API harcamaz.</div><div class="hint">Açılış oranı toleransı:</div>${tolChips()}</div>`;
   if (S.listLoading) return h + `<div class="spin"></div>`;
   const lg = leaguesOfDay();
   if (!lg.length) return h + `<div class="card"><div class="hint">Bu tarihte başlamamış, oranı olan maç yok. Başka gün seç.</div></div>`;
@@ -656,81 +680,55 @@ function renderRadar() {
   return h;
 }
 
-// ===== CANLI =====
-let liveTimer = null;
-async function loadLive(silent) {
-  const L = S.live;
-  if (!silent) { L.loading = true; L.error = ""; render(); }
-  try { const r = await call("live"); L.list = r.matches || []; L.error = ""; }
-  catch (e) { L.error = e.message; }
-  L.loading = false;
-  if (S.tab === "canli") render();
+// ===== KUPONLAR =====
+async function loadCoupons() {
+  const C = S.cp; C.loading = true; C.error = ""; render();
+  try { C.data = await call("coupons", { bm: S.bm, tol: S.tol }); }
+  catch (e) { C.error = e.message; }
+  C.loading = false; if (S.tab === "kupon") render();
 }
-async function loadLiveDetail(silent) {
-  const L = S.live; const id = L.sel; if (!id) return;
-  if (!silent) { L.dLoading = true; L.detail = null; render(); }
-  try {
-    const d = await call("live_detail", { match_id: id });
-    if (L.sel !== id) return;
-    L.detail = d;
-    if (d.cols?.length) S.cols = S.cols.length ? S.cols : d.cols;
-    const keys = Object.keys(d.books || {});
-    if (!L.bm || !keys.includes(L.bm)) L.bm = keys.includes(S.bm) ? S.bm : keys[0] || null;
-  } catch (e) { if (!silent) L.detail = { error: e.message }; }
-  L.dLoading = false;
-  if (S.tab === "canli") render();
-}
-function startLiveTimer() {
-  stopLiveTimer();
-  liveTimer = setInterval(() => {
-    if (document.hidden || S.tab !== "canli") return;
-    if (S.live.sel) loadLiveDetail(true); else loadLive(true);
-  }, 60000);
-}
-function stopLiveTimer() { if (liveTimer) clearInterval(liveTimer); liveTimer = null; }
-function renderLive() {
-  const L = S.live;
-  let h = `<div class="card"><div class="b"><span class="dot"></span> Şu an oynanan maçlar</div><div class="hint">Canlı veriler herkes için ortak, 1–2 dakikada bir yenilenir ve günlük sınırlıdır. Oranlar gecikmeli olabilir; bahis yapmadan önce sitede kontrol et.</div><div><button class="btn2" data-lvref>Şimdi yenile</button></div></div>`;
-  if (L.sel) {
-    const m = (L.list || []).find(x => x.id === L.sel) || {};
-    const d = L.detail;
-    h += `<div><button class="btn2" data-lvback>‹ Listeye dön</button></div>`;
-    h += `<div class="card"><div class="lvHead"><div class="grow" style="text-align:right" ><div class="b">${esc(m.home)}</div></div><div class="lvBig">${d?.meta?.hg ?? m.hg ?? "-"}-${d?.meta?.ag ?? m.ag ?? "-"}</div><div class="grow"><div class="b">${esc(m.away)}</div></div></div>
-      <div class="meta" style="text-align:center"><span style="color:var(--red);font-weight:800">${d?.meta?.minute ?? m.minute ?? ""}'</span> · ${esc(m.competition)}${d?.meta?.ht ? " · İY " + esc(d.meta.ht) : ""}</div></div>`;
-    if (L.dLoading && !d) return h + `<div class="spin"></div>`;
-    if (d?.error) return h + `<div class="err">⚠️ ${esc(d.error)}</div>`;
-    if (d?.stats?.length) {
-      h += `<div class="section">İstatistik</div><div class="card">` + d.stats.map(s => {
-        const a = parseFloat(s.h) || 0, b = parseFloat(s.a) || 0, t = a + b || 1;
-        return `<div class="st"><span class="n">${esc(s.h ?? "-")}</span><div class="stBars"><div class="stLbl">${esc(s.k)}</div><div class="stTrack"><span style="width:${a / t * 100}%;background:var(--teal)"></span><span style="width:${b / t * 100}%;background:var(--gold)"></span></div></div><span class="n">${esc(s.a ?? "-")}</span></div>`;
-      }).join("") + `</div>`;
-    }
-    const books = d?.books || {};
-    const keys = Object.keys(books);
-    h += `<div class="section">Canlı Oranlar</div>`;
-    if (!keys.length) h += `<div class="card"><div class="hint">${d?.oddsError ? esc(d.oddsError) : "Bu maç için şu an canlı oran yok."}</div></div>`;
-    else {
-      h += `<div class="chips">` + keys.map(k => `<button class="chip ${k === L.bm ? "on" : ""}" data-lvbm="${esc(k)}">${esc((BOOKMAKERS.find(b => b.slug === k) || {}).name || k)}</button>`).join("") + `</div>`;
-      const cols = d.cols || S.cols; const save = S.cols; S.cols = cols;
-      h += oddsGroups(books[L.bm] || [], false);
-      S.cols = save;
-    }
-    return h;
+const dayLabel = (day, i) => i === 0 ? "Bugün" : i === 1 ? "Yarın" : new Date(day + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "short", weekday: "short" });
+function couponCard(cp, day, no) {
+  const banko = cp.type === "banko";
+  let h = `<div class="card cpCard ${banko ? "cpB" : "cpR"}"><div class="cpHead"><span class="tag ${banko ? "g" : "y"}">${banko ? "BANKO" : "RİSKLİ"}</span><span class="b">${banko ? "Banko" : "Riskli"} Kupon ${no}</span><span class="cpOdd">${cp.total_odds.toFixed(2)}</span></div>`;
+  h += `<div class="hint">Toplam oran · geçmişe göre tutma ihtimali ~%${Math.round(cp.p_est * 100)} · güvenli alt sınır %${Math.round(cp.lb_est * 100)}</div>`;
+  for (const l of cp.legs) {
+    h += `<div class="leg"><div class="legTop"><span class="t">${hhmm(l.utc_date)}</span><div class="grow"><div class="b ell">${esc(l.home)} – ${esc(l.away)}</div><div class="meta ell">${esc(l.competition || "")}</div></div></div>
+      <div class="legPick"><span class="pk">${esc(l.pick)}</span><span class="pkOdd">${l.odd.toFixed(2)}</span><span class="grow hint">geçmişte ${l.k}/${l.n} maçta tuttu (%${Math.round(l.p * 100)})</span><button class="btn2" data-cpopen="${esc(l.match_id)}" data-cpday2="${esc(day)}">Analiz et</button></div></div>`;
   }
-  if (L.loading && !L.list) return h + `<div class="spin"></div>`;
-  if (L.error) h += `<div class="err">⚠️ ${esc(L.error)}</div>`;
-  if (L.list && !L.list.length) return h + `<div class="card"><div class="hint">Şu an canlı maç yok.</div></div>`;
-  if (L.list) {
-    let lastComp = null;
-    h += `<div class="card">`;
-    for (const m of L.list) {
-      if (m.competition !== lastComp) { lastComp = m.competition; h += `<div class="lg">${esc(m.competition || "Lig")}</div>`; }
-      h += `<button class="lvItem" data-lv="${esc(m.id)}"><span class="min">${m.minute != null ? m.minute + "'" : "•"}</span><span class="grow"><span class="b ell" style="display:block">${esc(m.home)}</span><span class="b ell" style="display:block">${esc(m.away)}</span></span><span class="lvScore">${m.hg ?? "-"}<br>${m.ag ?? "-"}</span></button>`;
-    }
-    h += `</div>`;
-  }
-  return h;
+  return h + `</div>`;
 }
+function tolHint() {
+  return S.tol ? `Açılış oranı toleransı: ±${(S.tol / 100).toFixed(2)}` : "Açılış oranları birebir aynı olan maçlar kullanılıyor";
+}
+function renderCoupons() {
+  const C = S.cp;
+  let h = bmChips(null, S.bm);
+  h += `<div class="card"><div class="b">Hazır Kuponlar · önümüzdeki 3 gün</div>
+    <div class="hint">Her maçın <b>açılış</b> MS oranlarıyla aynı açılan geçmiş maçlar bulunur, hangi seçimin ne sıklıkla tuttuğuna bakılır. <b>Banko</b>: en az ${C.data?.rules?.minN || 20} benzer maç ve yüksek güvenli alt sınır (%${Math.round((C.data?.rules?.bankoLb || 0.72) * 100)}+). <b>Riskli</b>: oranı yüksek, ama geçmişte oranın ima ettiğinden sık tutan seçimler (alt sınır %${Math.round((C.data?.rules?.riskliLb || 0.55) * 100)}+). Yeterli güvenli seçim yoksa kupon çıkmaz; az kupon çıkması normaldir.</div>
+    <div class="hint">${tolHint()}. Toleransı artırırsan daha çok benzer maç bulunur ama eşleşme gevşer:</div>${tolChips()}
+    <div><button class="btn2" data-cpref>Yenile</button></div></div>`;
+  if (C.loading && !C.data) return h + `<div class="spin"></div>`;
+  if (C.error) return h + `<div class="err">⚠️ ${esc(C.error)}</div>`;
+  if (!C.data) return h;
+  const days = C.data.days || [];
+  h += `<div class="chips">` + days.map((d, i) => `<button class="chip ${C.day === i ? "on" : ""}" data-cpday="${i}">${dayLabel(d.day, i)}${d.coupons.length ? " · " + d.coupons.length : ""}</button>`).join("") + `</div>`;
+  const d = days[C.day]; if (!d) return h;
+  h += `<div class="hint">${nf(d.diag.total)} maçın oranı yüklü · ${nf(d.diag.withOpen)} tanesinin açılış oranı var · ${nf(d.diag.enough)} maçta yeterli (en az ${C.data.rules.minN}) benzer geçmiş maç bulundu.</div>`;
+  if (!d.coupons.length) {
+    const why = !d.diag.total ? "Bu gün için oranı yüklenmiş başlamamış maç yok. Toplayıcı bu haftanın maçlarını günde 2 kez günceller."
+      : !d.diag.enough ? `Hiçbir maçta yeterli (en az ${C.data.rules.minN}) benzer geçmiş maç bulunamadı. Açılış oranı kayıtlı geçmiş maç sayısı az; yukarıdan oran toleransını artırmayı dene.`
+      : "Yeterli güvenli seçim bulunamadığı için bu gün kupon hazırlanmadı (kupon için en az 3 farklı maçta güvenli seçim gerekir).";
+    return h + `<div class="card"><div class="hint">${why}</div></div>` + cpFoot();
+  }
+  let nb = 0, nr = 0;
+  for (const cp of d.coupons) h += couponCard(cp, d.day, cp.type === "banko" ? ++nb : ++nr);
+  return h + cpFoot();
+}
+function cpFoot() {
+  return `<div class="hint">Oranlar sistemin son yüklediği orandır; bahis yapmadan önce sitede kontrol et. Başlamış maçlar kupondan otomatik çıkar. Bu içerik geçmiş verilere dayalı istatistiktir; bahis tavsiyesi değildir ve kazanç garantisi yoktur. 18 yaş üstü içindir.</div>`;
+}
+
 
 // ===== SECICI =====
 const picker = document.getElementById("picker"), q = document.getElementById("q"), plist = document.getElementById("plist");
@@ -752,13 +750,13 @@ plist.addEventListener("click", e => {
 document.getElementById("tabs").addEventListener("click", e => {
   const t = e.target.closest("[data-tab]"); if (!t) return;
   S.tab = t.dataset.tab;
-  if (S.tab === "canli") { if (!S.live.list) loadLive(); startLiveTimer(); } else stopLiveTimer();
+  if (S.tab === "kupon" && !S.cp.data) loadCoupons();
   render(); window.scrollTo(0, 0);
 });
 document.getElementById("app").addEventListener("click", e => {
   const t = e.target.closest("button"); if (!t || t.disabled) return;
   const d = t.dataset;
-  if (d.bm) { S.bm = d.bm; S.filters = []; S.result = null; S.loo = null; render(); }
+  if (d.bm) { S.bm = d.bm; S.filters = []; S.result = null; S.loo = null; S.cp.data = null; render(); if (S.tab === "kupon") loadCoupons(); }
   else if (d.shift) { const x = new Date(S.day); x.setDate(x.getDate() + +d.shift); S.day = x; loadDay(); }
   else if ("today" in d) { S.day = new Date(); loadDay(); }
   else if (d.mv) { S.idx += +d.mv; loadMatch(); refreshStatus(); }
@@ -778,14 +776,16 @@ document.getElementById("app").addEventListener("click", e => {
   else if (d.ropen) {
     const it = S.radar.items.find(x => x.m.id === d.ropen); const i = S.matches.findIndex(m => m.id === d.ropen);
     if (i < 0 || !it) return;
-    S.pendingAuto = { id: d.ropen, bm: S.bm, cols: it.filters.map(f => f.col) };
-    S.tab = "analiz"; stopLiveTimer(); S.idx = i; window.scrollTo(0, 0); loadMatch(); refreshStatus();
+    S.pendingAuto = { id: d.ropen, bm: S.bm };
+    S.tab = "analiz"; S.idx = i; window.scrollTo(0, 0); loadMatch(); refreshStatus();
   }
-  // canli
-  else if ("lvref" in d) { S.live.sel ? loadLiveDetail() : loadLive(); }
-  else if (d.lv) { S.live.sel = d.lv; S.live.detail = null; window.scrollTo(0, 0); loadLiveDetail(); }
-  else if ("lvback" in d) { S.live.sel = null; S.live.detail = null; render(); loadLive(true); }
-  else if (d.lvbm) { S.live.bm = d.lvbm; render(); }
+  // kuponlar
+  else if (d.tol !== undefined) { S.tol = +d.tol; store.set("tol", S.tol); S.result = null; S.loo = null; S.radar.items = []; S.radar.done = 0; S.radar.total = 0; S.cp.data = null; render(); if (S.tab === "kupon") loadCoupons(); }
+  else if (d.cpday !== undefined) { S.cp.day = +d.cpday; render(); }
+  else if ("cpref" in d) loadCoupons();
+  else if (d.cpopen) {
+    const day = d.cpday2; S.tab = "analiz"; S.pendingOpenId = d.cpopen; S.day = new Date(day + "T12:00:00"); window.scrollTo(0, 0); loadDay();
+  }
 });
 
 render();
